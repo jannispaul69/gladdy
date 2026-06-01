@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { socialLinks } from "@/content/social";
 
 function InstagramIcon() {
@@ -16,6 +17,14 @@ function TikTokIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.02a8.16 8.16 0 004.77 1.52V7.1a4.85 4.85 0 01-1-.41z" />
+    </svg>
+  );
+}
+
+function WhatsAppIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.38 1.26 4.8L2 22l5.44-1.37a9.87 9.87 0 004.6 1.14c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm4.89 13.45c-.21.59-1.2 1.12-1.67 1.19-.44.07-.99.09-1.59-.1-.37-.12-.84-.28-1.44-.55-2.53-1.09-4.18-3.63-4.31-3.8-.13-.17-1.07-1.42-1.07-2.71s.67-1.92.91-2.18c.24-.26.52-.33.69-.33l.49.01c.16.01.37-.06.58.44.21.51.73 1.79.79 1.92.07.13.11.28.02.44-.09.17-.13.27-.26.42-.13.15-.27.33-.39.44-.13.12-.27.25-.12.48.15.23.68 1.11 1.45 1.8 1 .89 1.84 1.16 2.1 1.29.26.12.41.1.56-.06.15-.17.64-.75.81-1.01.17-.26.34-.21.57-.13.23.09 1.47.69 1.72.82.25.13.42.19.48.3.06.11.06.63-.15 1.22z" />
     </svg>
   );
 }
@@ -38,11 +47,12 @@ function YouTubeIcon() {
 
 function SocialIcon({ platform }: { platform: string }) {
   switch (platform) {
-    case "Instagram": return <InstagramIcon />;
-    case "TikTok": return <TikTokIcon />;
-    case "Spotify": return <SpotifyIcon />;
-    case "YouTube": return <YouTubeIcon />;
-    default: return null;
+    case "instagram": return <InstagramIcon />;
+    case "tiktok":    return <TikTokIcon />;
+    case "whatsapp":  return <WhatsAppIcon />;
+    case "spotify":   return <SpotifyIcon />;
+    case "youtube":   return <YouTubeIcon />;
+    default:          return null;
   }
 }
 
@@ -70,22 +80,22 @@ export default function Footer() {
           <div>
             <div
               style={{
-                width: "52px",
-                height: "52px",
+                width: "56px",
+                height: "56px",
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, #FF3D9A, #B01570)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontFamily: "var(--font-anton)",
-                fontSize: "0.9rem",
-                color: "#fff",
-                letterSpacing: "0.06em",
+                overflow: "hidden",
                 marginBottom: "1rem",
+                border: "1.5px solid rgba(230,34,140,0.35)",
+                background: "linear-gradient(135deg, rgba(255,61,154,0.15), rgba(176,21,112,0.15))",
               }}
-              aria-hidden
             >
-              G
+              <Image
+                src="/gladdy-logo.png"
+                alt="GLADDY Logo"
+                width={56}
+                height={56}
+                style={{ objectFit: "cover", width: "100%", height: "100%" }}
+              />
             </div>
             <div style={{ fontFamily: "var(--font-anton)", fontSize: "1.25rem", color: "#fff", letterSpacing: "0.1em", marginBottom: "0.25rem" }}>
               GLADDY
@@ -105,26 +115,49 @@ export default function Footer() {
               Folge mir
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              {socialLinks.map((link) => (
-                <a
-                  key={link.platform}
-                  href={link.href}
-                  aria-label={link.label}
-                  className="hover-white"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.75rem",
-                    color: "rgba(255,255,255,0.5)",
-                    textDecoration: "none",
-                    fontSize: "0.9rem",
-                    transition: "color 0.2s",
-                  }}
-                >
-                  <SocialIcon platform={link.platform} />
-                  {link.platform}
-                </a>
-              ))}
+              {socialLinks.map((link) =>
+                link.active ? (
+                  <a
+                    key={link.platform}
+                    href={link.url}
+                    aria-label={`GLADDY auf ${link.label}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover-white"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.75rem",
+                      color: "rgba(255,255,255,0.55)",
+                      textDecoration: "none",
+                      fontSize: "0.9rem",
+                      transition: "color 0.2s",
+                    }}
+                  >
+                    <SocialIcon platform={link.platform} />
+                    {link.label}
+                  </a>
+                ) : (
+                  <div
+                    key={link.platform}
+                    aria-label={`${link.label} – demnächst`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.75rem",
+                      color: "rgba(255,255,255,0.2)",
+                      fontSize: "0.9rem",
+                      cursor: "default",
+                    }}
+                  >
+                    <SocialIcon platform={link.platform} />
+                    <span>{link.label}</span>
+                    <span style={{ fontSize: "0.6rem", letterSpacing: "0.1em", color: "rgba(230,34,140,0.4)", textTransform: "uppercase" }}>
+                      bald
+                    </span>
+                  </div>
+                )
+              )}
             </div>
           </div>
 
