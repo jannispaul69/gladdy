@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GLADDY – Party Crew
 
-## Getting Started
+Offizielle Artist-Landingpage für **GLADDY** (Partyschlager / Ballermann).
+One-Pager mit Booking-Funnel, Event-Kalender, Song-Embeds und Merch-Vorschau.
 
-First, run the development server:
+Dunkles, energiegeladenes Theme in Pink (`#E6228C`) auf Schwarz, mobile-first
+und barrierearm gebaut.
+
+---
+
+## Tech-Stack
+
+- **Next.js 16** (App Router) + **TypeScript** (strict)
+- **Tailwind CSS v4**
+- **framer-motion** für Animationen
+- **react-hook-form** + **zod** für Formular-Validierung
+- **Supabase** (`@supabase/supabase-js`) — Bookings & Events
+- **Resend** — Booking-Benachrichtigung + Auto-Reply
+- **Vercel Analytics**
+- Vorbereitet für **Shopify** Storefront (Merch)
+
+## Schnellstart
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # Werte eintragen (siehe unten)
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Die App läuft auch **ohne** konfigurierte Env-Variablen: Bookings und Events
+greifen dann auf einen Dev-Fallback zurück (keine DB-Writes, keine Mails,
+Demo-Events aus `content/events.ts`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment-Variablen
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Alle Variablen sind in `.env.example` dokumentiert:
 
-## Learn More
+| Variable | Zweck |
+| --- | --- |
+| `SUPABASE_URL` | Supabase Projekt-URL |
+| `SUPABASE_ANON_KEY` | Supabase anon Key (Insert Bookings, Select Events) |
+| `RESEND_API_KEY` | Resend API-Key für E-Mail-Versand |
+| `RESEND_FROM_EMAIL` | _(optional)_ verifizierter Absender, Fallback `onboarding@resend.dev` |
+| `BOOKING_EMAIL` | Zieladresse für Booking-Anfragen |
+| `NEXT_PUBLIC_SHOPIFY_DOMAIN` | _(später)_ Shopify-Domain für Merch |
+| `NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN` | _(später)_ Shopify Storefront-Token |
 
-To learn more about Next.js, take a look at the following resources:
+## Supabase einrichten
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Das vollständige Schema (inkl. Row Level Security) liegt in
+[`supabase/schema.sql`](./supabase/schema.sql). Im Supabase SQL-Editor ausführen –
+es legt zwei Tabellen an:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **`bookings`** — Booking-Anfragen (anon `INSERT` erlaubt, Lesen nur via Service-Role)
+- **`events`** — Live-Termine (anon `SELECT` erlaubt)
 
-## Deploy on Vercel
+## Inhalte pflegen (ohne Code)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Wiederkehrende Inhalte sind in `content/` ausgelagert:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Datei | Inhalt |
+| --- | --- |
+| `content/navigation.ts` | Navigationspunkte |
+| `content/songs.ts` | Spotify-/YouTube-IDs der Songs |
+| `content/social.ts` | Social-Media-Links |
+| `content/events.ts` | Demo-Events (Fallback, wenn Supabase nicht verbunden) |
+
+Echte Events kommen aus der Supabase-Tabelle `events`.
+
+## Projektstruktur
+
+```
+app/                 App Router (Seiten, Layout, Server Actions)
+  actions/booking.ts Server Action: Validierung -> Supabase -> Resend
+  impressum/         Rechtstext-Route
+  datenschutz/       Rechtstext-Route
+components/
+  sections/          Hero, About, Events, Songs, Booking, Merch, Footer
+  Nav.tsx            Sticky-Navigation + Mobile-Overlay
+content/             Pflegbare Inhalte (siehe oben)
+lib/                 supabase-Client, Validierung, Typen, Event-Loader
+public/              Assets (u. a. gladdy-logo.png)
+supabase/schema.sql  DB-Schema + RLS-Policies
+```
+
+## Deployment (Vercel)
+
+1. Repo bei Vercel importieren.
+2. Environment-Variablen aus der Tabelle oben in den Vercel-Projekteinstellungen setzen.
+3. Deploy — Build-Command und Output werden von Next.js automatisch erkannt.
+
+## Logo
+
+Erwartet wird ein transparentes PNG unter `public/gladdy-logo.png`. Fehlt es,
+zeigen Hero und Navigation automatisch einen „GLADDY · PARTY CREW"-Platzhalter.
