@@ -172,6 +172,7 @@ export default function Footer() {
                 { label: "Songs hören", href: "#songs" },
                 { label: "Impressum", href: "/impressum" },
                 { label: "Datenschutz", href: "/datenschutz" },
+                { label: "AGB", href: "/agb" },
               ].map((link) => (
                 <a
                   key={link.href}
@@ -209,6 +210,7 @@ export default function Footer() {
           <div style={{ display: "flex", gap: "1.5rem" }}>
             <a href="/impressum" className="hover-white" style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.75rem", textDecoration: "none", transition: "color 0.2s" }}>Impressum</a>
             <a href="/datenschutz" className="hover-white" style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.75rem", textDecoration: "none", transition: "color 0.2s" }}>Datenschutz</a>
+            <a href="/agb" className="hover-white" style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.75rem", textDecoration: "none", transition: "color 0.2s" }}>AGB</a>
           </div>
         </div>
       </div>

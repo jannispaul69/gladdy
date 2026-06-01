@@ -221,3 +221,46 @@ body {
   border-color: var(--primary);
   transform: translateY(-4px);
 }
+
+/* ── Legal pages ─────────────────────────────────────────────── */
+.legal-content h2 {
+  font-family: var(--font-anton);
+  font-size: 1.25rem;
+  letter-spacing: 0.06em;
+  color: #fff;
+  margin: 2.5rem 0 0.75rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(230,34,140,0.12);
+}
+.legal-content h2:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+.legal-content h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  margin: 1.5rem 0 0.4rem;
+}
+.legal-content p { margin: 0 0 0.85rem; }
+.legal-content ul, .legal-content ol {
+  padding-left: 1.25rem;
+  margin: 0 0 0.85rem;
+}
+.legal-content li { margin-bottom: 0.3rem; }
+.legal-content a { color: var(--primary); text-decoration: none; }
+.legal-content a:hover { text-decoration: underline; }
+.legal-content strong { color: rgba(255,255,255,0.95); font-weight: 600; }
+.legal-content .highlight {
+  background: rgba(230,34,140,0.08);
+  border: 1px solid rgba(230,34,140,0.2);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+}
+.legal-content .placeholder {
+  background: rgba(255,200,0,0.1);
+  border: 1px dashed rgba(255,200,0,0.4);
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  color: #ffd060;
+  font-size: 0.85em;
+  font-family: monospace;
+}
