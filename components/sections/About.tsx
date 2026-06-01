@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 
 interface Block {
@@ -135,6 +136,35 @@ export default function About() {
         {blocks.map((block, i) => (
           <Block key={block.headline} block={block} index={i} />
         ))}
+
+        {/* Artist photo strip */}
+        <div className="about-photos" role="img" aria-label="Gladdy – Fotos">
+          {(["1.png", "2.png", "3.png"] as const).map((src, i) => (
+            <motion.div
+              key={src}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.6, delay: i * 0.12 }}
+              style={{
+                borderRadius: "8px",
+                overflow: "hidden",
+                border: "1px solid rgba(230,34,140,0.2)",
+                background: "var(--background)",
+                aspectRatio: "2/3",
+                position: "relative",
+              }}
+            >
+              <Image
+                src={`/${src}`}
+                alt={`Gladdy – Foto ${i + 1}`}
+                fill
+                sizes="(max-width: 640px) 100vw, 33vw"
+                style={{ objectFit: "cover", objectPosition: "top center" }}
+              />
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );

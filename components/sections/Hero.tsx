@@ -127,6 +127,18 @@ export default function Hero() {
         }}
       />
 
+      {/* Artist key visual — desktop only, fades in from right */}
+      <div className="hero-artist" aria-hidden>
+        <Image
+          src="/gladdy-hero.png"
+          alt=""
+          width={480}
+          height={600}
+          style={{ objectFit: "contain", objectPosition: "bottom right", opacity: 0.9 }}
+          priority
+        />
+      </div>
+
       {/* Content */}
       <div
         style={{

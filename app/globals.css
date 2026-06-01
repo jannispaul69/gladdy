@@ -83,6 +83,34 @@ body {
   border-radius: 4px;
 }
 
+/* Hero artist image — only visible on large screens */
+.hero-artist {
+  display: none;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 42%;
+  max-width: 480px;
+  z-index: 0;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 35%);
+  mask-image: linear-gradient(to right, transparent 0%, black 35%);
+  pointer-events: none;
+}
+@media (min-width: 1024px) {
+  .hero-artist { display: block; }
+}
+
+/* About photos — 3-col grid on desktop, 1-col on mobile */
+.about-photos {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding-top: 3rem;
+}
+@media (min-width: 640px) {
+  .about-photos { grid-template-columns: repeat(3, 1fr); }
+}
+
 /* Mobile menu toggle — hidden on md+ (media query beats inline display) */
 .nav-toggle {
   display: flex;
