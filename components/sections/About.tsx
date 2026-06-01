@@ -133,48 +133,107 @@ export default function About() {
           <div style={{ width: "40px", height: "2px", background: "linear-gradient(90deg, #FF3D9A, #B01570)", marginBottom: "2rem" }} />
         </div>
 
-        {blocks.map((block, i) => (
+        {/* First 3 blocks as text-only */}
+        {blocks.slice(0, 3).map((block, i) => (
           <Block key={block.headline} block={block} index={i} />
         ))}
 
-        {/* Artist photo */}
+        {/* Last block: photo left + text right */}
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 32 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.7 }}
           style={{
-            marginTop: "3rem",
-            borderRadius: "12px",
-            overflow: "hidden",
-            border: "1px solid rgba(230,34,140,0.25)",
-            background: "var(--background)",
-            aspectRatio: "3/4",
-            position: "relative",
-            maxWidth: "480px",
-            margin: "3rem auto 0",
+            gap: "3rem",
+            alignItems: "center",
           }}
+          className="about-block"
         >
-          <Image
-            src="/3.png"
-            alt="Gladdy – Bühnenshow"
-            fill
-            sizes="(max-width: 640px) 100vw, 480px"
-            style={{ objectFit: "cover", objectPosition: "top center" }}
-          />
-          {/* Pink vignette at bottom */}
+          {/* Photo */}
           <div
-            aria-hidden
             style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: "40%",
-              background: "linear-gradient(to top, rgba(10,10,10,0.7), transparent)",
-              pointerEvents: "none",
+              position: "relative",
+              borderRadius: "12px",
+              overflow: "hidden",
+              border: "1px solid rgba(230,34,140,0.3)",
+              aspectRatio: "3/4",
+              background: "var(--background)",
+              boxShadow: "0 0 60px rgba(230,34,140,0.12)",
             }}
-          />
+          >
+            <Image
+              src="/3.png"
+              alt="Gladdy – Bühnenshow"
+              fill
+              sizes="(max-width: 768px) 100vw, 500px"
+              style={{ objectFit: "cover", objectPosition: "top center" }}
+            />
+            {/* Pink glow overlay at bottom */}
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: "45%",
+                background: "linear-gradient(to top, rgba(176,21,112,0.5), transparent)",
+                pointerEvents: "none",
+              }}
+            />
+          </div>
+
+          {/* Text — last block */}
+          <div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "1rem", marginBottom: "1rem" }}>
+              <span
+                style={{
+                  fontFamily: "var(--font-anton)",
+                  fontSize: "5rem",
+                  lineHeight: 1,
+                  color: "rgba(230,34,140,0.12)",
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                04
+              </span>
+              <span
+                style={{
+                  fontSize: "0.65rem",
+                  letterSpacing: "0.22em",
+                  color: "var(--primary)",
+                  textTransform: "uppercase",
+                  fontWeight: 500,
+                }}
+              >
+                {blocks[3].label}
+              </span>
+            </div>
+            <h2
+              style={{
+                fontFamily: "var(--font-anton)",
+                fontSize: "clamp(2.25rem, 5vw, 3.5rem)",
+                letterSpacing: "0.04em",
+                lineHeight: 1,
+                color: "#fff",
+                WebkitTextStroke: "1.5px var(--primary)",
+                marginBottom: "1.25rem",
+              }}
+            >
+              {blocks[3].headline}
+            </h2>
+            <p
+              style={{
+                color: "rgba(255,255,255,0.6)",
+                lineHeight: 1.85,
+                fontSize: "1rem",
+                maxWidth: "520px",
+              }}
+            >
+              {blocks[3].text}
+            </p>
+          </div>
         </motion.div>
       </div>
     </section>
