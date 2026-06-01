@@ -145,7 +145,7 @@ export default function Hero() {
           position: "relative",
           zIndex: 1,
           textAlign: "center",
-          padding: "9rem 1.5rem 5rem",
+          padding: "8rem 1.25rem 8rem",
           maxWidth: "800px",
           margin: "0 auto",
         }}
@@ -156,10 +156,10 @@ export default function Hero() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
           style={{
-            width: "160px",
-            height: "160px",
+            width: "clamp(120px, 35vw, 160px)",
+            height: "clamp(120px, 35vw, 160px)",
             borderRadius: "50%",
-            margin: "0 auto 2.5rem",
+            margin: "0 auto 2rem",
             border: "2px solid rgba(230,34,140,0.5)",
             background: "linear-gradient(135deg, rgba(255,61,154,0.15), rgba(176,21,112,0.15))",
             display: "flex",
@@ -242,7 +242,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.75, duration: 0.6 }}
-          style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}
+          style={{ display: "flex", gap: "0.875rem", justifyContent: "center", flexWrap: "wrap" }}
         >
           <a
             href="#booking"
@@ -255,6 +255,10 @@ export default function Hero() {
               fontSize: "0.9rem",
               letterSpacing: "0.06em",
               display: "inline-block",
+              minWidth: "160px",
+              flex: "1 1 160px",
+              maxWidth: "240px",
+              textAlign: "center",
             }}
           >
             Jetzt buchen
@@ -269,6 +273,10 @@ export default function Hero() {
               fontSize: "0.9rem",
               letterSpacing: "0.06em",
               display: "inline-block",
+              minWidth: "160px",
+              flex: "1 1 160px",
+              maxWidth: "240px",
+              textAlign: "center",
             }}
           >
             Songs hören

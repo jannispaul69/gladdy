@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { navLinks } from "@/content/navigation";
 
 export default function Nav() {
@@ -57,7 +58,7 @@ export default function Nav() {
           <a
             href="#top"
             onClick={(e) => { e.preventDefault(); handleNavClick("#top"); }}
-            style={{ display: "flex", alignItems: "center", gap: "0.75rem", textDecoration: "none" }}
+            style={{ display: "flex", alignItems: "center", gap: "0.625rem", textDecoration: "none" }}
             aria-label="GLADDY – Zurück zum Anfang"
           >
             <div
@@ -65,19 +66,20 @@ export default function Nav() {
                 width: "44px",
                 height: "44px",
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, #FF3D9A, #B01570)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "0.9rem",
-                color: "#fff",
-                letterSpacing: "0.06em",
+                overflow: "hidden",
                 flexShrink: 0,
-                fontFamily: "var(--font-anton)",
+                border: "1.5px solid rgba(230,34,140,0.4)",
               }}
               aria-hidden
             >
-              G
+              <Image
+                src="/gladdy-logo.png"
+                alt=""
+                width={44}
+                height={44}
+                style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                priority
+              />
             </div>
             <div>
               <div style={{ fontFamily: "var(--font-anton)", fontSize: "1.15rem", color: "#fff", letterSpacing: "0.08em", lineHeight: 1 }}>

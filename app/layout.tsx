@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Anton, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import CookieBanner from "@/components/CookieBanner";
 import "./globals.css";
 
 const anton = Anton({
@@ -24,12 +25,13 @@ export const metadata: Metadata = {
     title: "GLADDY – Party Crew",
     description: "Partyschlager & Ballermann — Hol dir die Party auf deine Bühne.",
     type: "website",
-    images: [{ url: "/og-image.jpg", width: 1200, height: 630 }],
+    images: [{ url: "/og-image.png", width: 1080, height: 1350, alt: "GLADDY – Party Crew" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "GLADDY – Party Crew",
     description: "Partyschlager & Ballermann — Jetzt buchen!",
+    images: ["/og-image.png"],
   },
   metadataBase: new URL("https://gladdy.de"),
 };
@@ -43,6 +45,7 @@ export default function RootLayout({
     <html lang="de" className={`${anton.variable} ${inter.variable} h-full`}>
       <body className="min-h-full flex flex-col antialiased noise">
         {children}
+        <CookieBanner />
         <Analytics />
       </body>
     </html>

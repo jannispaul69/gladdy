@@ -76,6 +76,11 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--pink-dark); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
+/* Mobile section spacing — tighter padding on small screens */
+@media (max-width: 639px) {
+  section { padding-top: 4rem !important; padding-bottom: 4rem !important; }
+}
+
 /* Focus ring */
 :focus-visible {
   outline: 2px solid var(--primary);
@@ -100,15 +105,35 @@ body {
   .hero-artist { display: block; }
 }
 
-/* About photos — 3-col grid on desktop, 1-col on mobile */
+/* About photos — horizontal scroll on mobile, 3-col grid on sm+ */
 .about-photos {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
   gap: 1rem;
   padding-top: 3rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.5rem;
+  /* hide scrollbar but keep functionality */
+  scrollbar-width: none;
+}
+.about-photos::-webkit-scrollbar { display: none; }
+.about-photos > * {
+  flex: 0 0 72vw;
+  max-width: 280px;
+  scroll-snap-align: start;
 }
 @media (min-width: 640px) {
-  .about-photos { grid-template-columns: repeat(3, 1fr); }
+  .about-photos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    overflow-x: unset;
+    scroll-snap-type: unset;
+  }
+  .about-photos > * {
+    flex: unset;
+    max-width: unset;
+  }
 }
 
 /* Mobile menu toggle — hidden on md+ (media query beats inline display) */
