@@ -264,3 +264,21 @@ body {
   font-size: 0.85em;
   font-family: monospace;
 }
+
+/* ── Merch product grids ───────────────────────────────────── */
+.merch-product-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+  .merch-product-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.merch-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+@media (min-width: 640px) {
+  .merch-bottom-grid { grid-template-columns: 1fr 1fr; }
+}
