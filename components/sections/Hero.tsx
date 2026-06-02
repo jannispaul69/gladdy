@@ -110,10 +110,18 @@ export default function Hero() {
         aria-hidden
         className="hidden lg:block"
       >
-        <Badge style={{ top: "28%", left: "6%" }}>🎤 Live Acts</Badge>
-        <Badge style={{ top: "35%", right: "5%", animationDelay: "1.2s" }}>🎉 Partyschlager</Badge>
-        <Badge style={{ bottom: "28%", left: "8%", animationDelay: "0.8s" }}>🍺 Ballermann</Badge>
-        <Badge style={{ bottom: "32%", right: "7%", animationDelay: "1.6s" }}>🎸 Club & Events</Badge>
+        {/* Left side badges */}
+        <Badge style={{ top: "18%", left: "4%" }}>🎤 Live Acts</Badge>
+        <Badge style={{ top: "34%", left: "3%", animationDelay: "0.6s" }}>🌴 Mallorca</Badge>
+        <Badge style={{ top: "51%", left: "5%", animationDelay: "1.1s" }}>🍺 Ballermann</Badge>
+        <Badge style={{ top: "67%", left: "4%", animationDelay: "1.8s" }}>🏆 Ruhrpott</Badge>
+        <Badge style={{ top: "82%", left: "6%", animationDelay: "0.4s" }}>⚡ Energie</Badge>
+        {/* Right side badges */}
+        <Badge style={{ top: "20%", right: "4%", animationDelay: "0.9s" }}>🎉 Partyschlager</Badge>
+        <Badge style={{ top: "36%", right: "3%", animationDelay: "1.4s" }}>🎵 Mitsingen</Badge>
+        <Badge style={{ top: "53%", right: "5%", animationDelay: "0.3s" }}>🎸 Club & Events</Badge>
+        <Badge style={{ top: "69%", right: "4%", animationDelay: "1.7s" }}>🎪 Festival</Badge>
+        <Badge style={{ top: "83%", right: "6%", animationDelay: "0.7s" }}>🎶 Stimmung</Badge>
       </motion.div>
 
       {/* Content */}
@@ -129,11 +137,11 @@ export default function Hero() {
           {/* Outer glow ring */}
           <div aria-hidden style={{ position: "absolute", inset: "-10px", borderRadius: "50%", border: "1px solid rgba(230,34,140,0.2)", pointerEvents: "none" }} />
           <Image
-            src="/3.png"
+            src="/Titelbild.png"
             alt="GLADDY"
             fill
             sizes="260px"
-            style={{ objectFit: "cover", objectPosition: "center 15%" }}
+            style={{ objectFit: "cover", objectPosition: "center 25%" }}
             priority
           />
         </motion.div>
@@ -183,13 +191,6 @@ export default function Hero() {
             Jetzt buchen
           </a>
           <a
-            href="#merch"
-            onClick={(e) => { e.preventDefault(); document.querySelector("#merch")?.scrollIntoView({ behavior: "smooth" }); }}
-            style={{ padding: "0.9rem 2rem", borderRadius: "8px", fontSize: "0.9rem", letterSpacing: "0.06em", display: "inline-block", flex: "1 1 150px", maxWidth: "220px", textAlign: "center", background: "rgba(255,140,0,0.12)", border: "1px solid rgba(255,140,0,0.4)", color: "#FFB347", textDecoration: "none", transition: "background 0.2s, border-color 0.2s" }}
-          >
-            Merch entdecken
-          </a>
-          <a
             href="#songs"
             onClick={(e) => { e.preventDefault(); document.querySelector("#songs")?.scrollIntoView({ behavior: "smooth" }); }}
             className="btn-ghost"
@@ -199,21 +200,10 @@ export default function Hero() {
           </a>
         </motion.div>
 
-        {/* Video placeholder — swap `src` for actual video URL when ready */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.1 }}
-        >
-          {/* VIDEO_PLACEHOLDER — replace this block with <video> or YouTube embed when footage is available */}
-          <div
-            style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 1rem", background: "rgba(255,255,255,0.04)", border: "1px dashed rgba(255,255,255,0.12)", borderRadius: "100px", fontSize: "0.72rem", color: "rgba(255,255,255,0.35)", letterSpacing: "0.08em", cursor: "default" }}
-            title="Hier kommt das Performance-Video"
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(230,34,140,0.6)"><polygon points="5 3 19 12 5 21 5 3" /></svg>
-            Performance-Video folgt bald
-          </div>
-        </motion.div>
+        {/* VIDEO_PLACEHOLDER — uncomment and replace src when footage is available:
+        <video autoPlay muted loop playsInline style={{ position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:0.3 }}>
+          <source src="/hero-video.mp4" type="video/mp4" />
+        </video> */}
       </div>
 
       {/* Scroll indicator */}
