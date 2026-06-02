@@ -28,14 +28,24 @@ export default function BookingBanner() {
           <p style={{ fontSize: "0.65rem", letterSpacing: "0.22em", color: "var(--primary)", textTransform: "uppercase", fontWeight: 500, marginBottom: "1rem" }}>
             Booking
           </p>
-          <h2 style={{ fontFamily: "var(--font-anton)", fontSize: "clamp(2rem, 6vw, 4.5rem)", letterSpacing: "0.05em", color: "#fff", lineHeight: 1, marginBottom: "1.25rem", WebkitTextStroke: "1.5px var(--primary)", textShadow: "0 0 40px rgba(230,34,140,0.35)" }}>
+          <h2 style={{ fontFamily: "var(--font-anton)", fontSize: "clamp(2rem, 6vw, 4.5rem)", letterSpacing: "0.05em", color: "#fff", lineHeight: 1, marginBottom: "2rem", WebkitTextStroke: "1.5px var(--primary)", textShadow: "0 0 40px rgba(230,34,140,0.35)" }}>
             GLADDY FÜR
             <br />
             DEIN EVENT BUCHEN
           </h2>
-          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "clamp(0.95rem, 1.5vw, 1.1rem)", maxWidth: "560px", margin: "0 auto 2.5rem", lineHeight: 1.75 }}>
-            Club, Stadtfest, Firmenfeier oder private Party — GLADDY bringt die Energie, die dein Event unvergesslich macht.
-          </p>
+
+          {/* Artist pitch text */}
+          <div style={{ maxWidth: "700px", margin: "0 auto 2.75rem", display: "flex", flexDirection: "column", gap: "1rem", textAlign: "left" }}>
+            <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "clamp(0.95rem, 1.5vw, 1.05rem)", lineHeight: 1.8 }}>
+              Gladdy bringt die perfekte Mischung aus Ruhrpott-Ehrlichkeit, rheinischer Lebensfreude und moderner Partyschlager-Energie auf die Bühne. Mit seiner sympathischen und authentischen Art schafft er es, das Publikum von der ersten Minute an mitzunehmen und für echte Partystimmung zu sorgen.
+            </p>
+            <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "clamp(0.92rem, 1.4vw, 1rem)", lineHeight: 1.8 }}>
+              Seine Auftritte stehen für Mitsingen, Mitfeiern und gute Laune. Dabei überzeugt Gladdy nicht nur musikalisch, sondern auch durch seine Nähe zum Publikum und seine natürliche Bühnenpräsenz. Ob Stadtfest, Vereinsfeier, Festival, Mallorca-Event oder Partynacht — Gladdy sorgt für Stimmung, Emotionen und unvergessliche Momente.
+            </p>
+            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "clamp(0.9rem, 1.3vw, 0.975rem)", lineHeight: 1.8, fontStyle: "italic" }}>
+              Wer einen Künstler sucht, der Menschen begeistert, verbindet und jede Veranstaltung mit echter Partyatmosphäre bereichert, ist bei Gladdy genau richtig.
+            </p>
+          </div>
 
           <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap", alignItems: "center" }}>
             <a
@@ -48,9 +58,9 @@ export default function BookingBanner() {
             </a>
             <a
               href="mailto:booking@gladdy-offiziell.de"
-              style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.85rem", textDecoration: "none", letterSpacing: "0.04em", transition: "color 0.2s" }}
+              style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.85rem", textDecoration: "none", letterSpacing: "0.04em", transition: "color 0.2s" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "var(--primary)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.45)")}
             >
               booking@gladdy-offiziell.de
             </a>
