@@ -110,18 +110,17 @@ export default function Hero() {
         aria-hidden
         className="hidden lg:block"
       >
-        {/* Left side badges */}
-        <Badge style={{ top: "18%", left: "4%" }}>🎤 Live Acts</Badge>
-        <Badge style={{ top: "34%", left: "3%", animationDelay: "0.6s" }}>🌴 Mallorca</Badge>
-        <Badge style={{ top: "51%", left: "5%", animationDelay: "1.1s" }}>🍺 Ballermann</Badge>
-        <Badge style={{ top: "67%", left: "4%", animationDelay: "1.8s" }}>🏆 Ruhrpott</Badge>
-        <Badge style={{ top: "82%", left: "6%", animationDelay: "0.4s" }}>⚡ Energie</Badge>
-        {/* Right side badges */}
-        <Badge style={{ top: "20%", right: "4%", animationDelay: "0.9s" }}>🎉 Partyschlager</Badge>
-        <Badge style={{ top: "36%", right: "3%", animationDelay: "1.4s" }}>🎵 Mitsingen</Badge>
-        <Badge style={{ top: "53%", right: "5%", animationDelay: "0.3s" }}>🎸 Club & Events</Badge>
-        <Badge style={{ top: "69%", right: "4%", animationDelay: "1.7s" }}>🎪 Festival</Badge>
-        <Badge style={{ top: "83%", right: "6%", animationDelay: "0.7s" }}>🎶 Stimmung</Badge>
+        {/* Randomly scattered badges */}
+        <Badge style={{ top: "14%", left: "3%" }}>🎤 Live Acts</Badge>
+        <Badge style={{ top: "58%", left: "1%", animationDelay: "0.7s" }}>🌴 Mallorca</Badge>
+        <Badge style={{ top: "35%", left: "7%", animationDelay: "1.3s" }}>🍺 Ballermann</Badge>
+        <Badge style={{ top: "80%", left: "5%", animationDelay: "0.4s" }}>🏆 Ruhrpott</Badge>
+        <Badge style={{ top: "72%", left: "14%", animationDelay: "1.9s" }}>⚡ Energie</Badge>
+        <Badge style={{ top: "10%", right: "6%", animationDelay: "0.9s" }}>🎉 Partyschlager</Badge>
+        <Badge style={{ top: "44%", right: "2%", animationDelay: "1.5s" }}>🎵 Mitsingen</Badge>
+        <Badge style={{ top: "68%", right: "8%", animationDelay: "0.2s" }}>🎸 Club & Events</Badge>
+        <Badge style={{ top: "27%", right: "5%", animationDelay: "1.1s" }}>🎪 Festival</Badge>
+        <Badge style={{ top: "84%", right: "3%", animationDelay: "0.6s" }}>🎶 Stimmung</Badge>
       </motion.div>
 
       {/* Content */}
@@ -141,7 +140,7 @@ export default function Hero() {
             alt="GLADDY"
             fill
             sizes="260px"
-            style={{ objectFit: "cover", objectPosition: "center 25%" }}
+            style={{ objectFit: "cover", objectPosition: "50% 5%" }}
             priority
           />
         </motion.div>
