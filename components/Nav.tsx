@@ -58,36 +58,26 @@ export default function Nav() {
           <a
             href="#top"
             onClick={(e) => { e.preventDefault(); handleNavClick("#top"); }}
-            style={{ display: "flex", alignItems: "center", gap: "0.625rem", textDecoration: "none" }}
+            style={{ display: "flex", alignItems: "center", textDecoration: "none" }}
             aria-label="GLADDY – Zurück zum Anfang"
           >
             <div
               style={{
-                width: "44px",
-                height: "44px",
+                width: "48px",
+                height: "48px",
                 borderRadius: "50%",
                 overflow: "hidden",
                 flexShrink: 0,
-                border: "1.5px solid rgba(230,34,140,0.4)",
               }}
-              aria-hidden
             >
               <Image
                 src="/gladdy-logo.png"
-                alt=""
-                width={44}
-                height={44}
+                alt="GLADDY"
+                width={48}
+                height={48}
                 style={{ objectFit: "cover", width: "100%", height: "100%" }}
                 priority
               />
-            </div>
-            <div>
-              <div style={{ fontFamily: "var(--font-anton)", fontSize: "1.15rem", color: "#fff", letterSpacing: "0.08em", lineHeight: 1 }}>
-                GLADDY
-              </div>
-              <div style={{ fontSize: "0.55rem", color: "var(--primary)", letterSpacing: "0.18em", textTransform: "uppercase" }}>
-                Party Crew
-              </div>
             </div>
           </a>
 

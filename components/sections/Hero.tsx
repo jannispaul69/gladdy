@@ -1,31 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-
-function LogoContent() {
-  const [imgFailed, setImgFailed] = useState(false);
-  if (imgFailed) {
-    return (
-      <div style={{ textAlign: "center" }}>
-        <div style={{ fontFamily: "var(--font-anton)", fontSize: "2rem", color: "#fff", letterSpacing: "0.1em", lineHeight: 1 }}>GLADDY</div>
-        <div style={{ fontSize: "0.5rem", color: "var(--primary)", letterSpacing: "0.2em", textTransform: "uppercase", marginTop: "6px" }}>PARTY CREW</div>
-      </div>
-    );
-  }
-  return (
-    <Image
-      src="/gladdy-logo.png"
-      alt="GLADDY – Party Crew Logo"
-      width={160}
-      height={160}
-      style={{ objectFit: "cover", borderRadius: "50%", width: "100%", height: "100%" }}
-      priority
-      onError={() => setImgFailed(true)}
-    />
-  );
-}
 
 // ── Floating badge ───────────────────────────────────────────
 function Badge({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
@@ -147,10 +124,18 @@ export default function Hero() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          style={{ width: "clamp(110px, 32vw, 150px)", height: "clamp(110px, 32vw, 150px)", borderRadius: "50%", margin: "0 auto 1.75rem", border: "2px solid rgba(230,34,140,0.5)", background: "linear-gradient(135deg, rgba(255,61,154,0.12), rgba(176,21,112,0.12))", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative", flexShrink: 0, boxShadow: "0 0 40px rgba(230,34,140,0.25), 0 0 80px rgba(230,34,140,0.1)" }}
+          style={{ width: "clamp(180px, 42vw, 260px)", height: "clamp(180px, 42vw, 260px)", borderRadius: "50%", margin: "0 auto 1.75rem", border: "2.5px solid rgba(230,34,140,0.6)", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative", flexShrink: 0, boxShadow: "0 0 50px rgba(230,34,140,0.3), 0 0 100px rgba(230,34,140,0.12)" }}
         >
-          <div aria-hidden style={{ position: "absolute", inset: "-8px", borderRadius: "50%", border: "1px solid rgba(230,34,140,0.18)", pointerEvents: "none" }} />
-          <LogoContent />
+          {/* Outer glow ring */}
+          <div aria-hidden style={{ position: "absolute", inset: "-10px", borderRadius: "50%", border: "1px solid rgba(230,34,140,0.2)", pointerEvents: "none" }} />
+          <Image
+            src="/3.png"
+            alt="GLADDY"
+            fill
+            sizes="260px"
+            style={{ objectFit: "cover", objectPosition: "center 15%" }}
+            priority
+          />
         </motion.div>
 
         {/* Tag line */}
