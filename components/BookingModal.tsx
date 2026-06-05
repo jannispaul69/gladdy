@@ -89,6 +89,18 @@ export default function BookingModal() {
             aria-hidden
           />
 
+          {/* Centering wrapper — flex handles positioning so Framer Motion transforms don't conflict */}
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 201,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              pointerEvents: "none",
+            }}
+          >
           {/* Modal */}
           <motion.div
             role="dialog"
@@ -99,11 +111,7 @@ export default function BookingModal() {
             exit={{ y: 40, opacity: 0, scale: 0.97 }}
             transition={{ type: "spring", stiffness: 280, damping: 28 }}
             style={{
-              position: "fixed",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              zIndex: 201,
+              pointerEvents: "auto",
               width: "min(90vw, 760px)",
               maxHeight: "88vh",
               overflowY: "auto",
@@ -229,6 +237,7 @@ export default function BookingModal() {
               )}
             </div>
           </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
