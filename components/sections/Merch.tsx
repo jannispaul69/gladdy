@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
+import Image from "next/image";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 
 const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"] as const;
 type Size = (typeof SIZES)[number];
@@ -22,6 +23,11 @@ const SIZE_CHART: { size: string; length: string; chest: string }[] = [
   { size: "3XL",length: "82 cm", chest: "68 cm" },
   { size: "4XL",length: "84 cm", chest: "72 cm" },
 ];
+
+const PRODUCT_IMAGES: Record<ColorId, { front: string; back: string }> = {
+  black: { front: "/merch-shirt-black-front.jpg", back: "/merch-shirt-black-back.jpg" },
+  white: { front: "/merch-shirt-white-front.jpg", back: "/merch-shirt-white-back.jpg" },
+};
 
 const CHECKOUT_ENABLED = process.env.NEXT_PUBLIC_CHECKOUT_ENABLED === "true";
 const PRODUCT_PRICE_CENTS = 2490;
@@ -108,28 +114,64 @@ function TShirtCard() {
   const [selectedColor, setSelectedColor] = useState<ColorId>("black");
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
   const [chartOpen, setChartOpen] = useState(false);
+  const [side, setSide] = useState<"front" | "back">("front");
 
   const colorObj = COLORS.find((c) => c.id === selectedColor)!;
+  const imageSrc = PRODUCT_IMAGES[selectedColor][side];
 
   return (
     <div
       style={{ background: "var(--surface)", border: "1px solid rgba(230,34,140,0.2)", borderRadius: "12px", overflow: "hidden", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}
       className="merch-product-grid"
     >
-      {/* Image placeholder */}
+      {/* Product image with front/back toggle */}
       <div
-        style={{ background: selectedColor === "black" ? "#111" : "#f5f5f5", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", aspectRatio: "3/4", position: "relative", minHeight: "320px", transition: "background 0.4s" }}
+        style={{ background: selectedColor === "black" ? "#111" : "#e8e8e8", position: "relative", aspectRatio: "1/1", minHeight: "320px", transition: "background 0.4s", overflow: "hidden" }}
       >
-        {/* T-Shirt silhouette SVG */}
-        <svg width="48%" viewBox="0 0 200 180" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ opacity: selectedColor === "black" ? 0.15 : 0.2 }}>
-          <path d="M70 10 L10 50 L30 70 L55 55 L55 170 L145 170 L145 55 L170 70 L190 50 L130 10 Q100 30 70 10Z" fill={selectedColor === "black" ? "#fff" : "#333"} />
-        </svg>
-        <p style={{ position: "absolute", bottom: "1.25rem", fontSize: "0.7rem", letterSpacing: "0.1em", color: selectedColor === "black" ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.25)", textTransform: "uppercase" }}>
-          Produktfoto folgt
-        </p>
-        {/* Color hint badge */}
-        <div style={{ position: "absolute", top: "1rem", left: "1rem", background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)", borderRadius: "100px", padding: "0.25rem 0.7rem", fontSize: "0.65rem", color: "rgba(255,255,255,0.7)", letterSpacing: "0.08em" }}>
-          {colorObj.label}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={imageSrc}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{ position: "absolute", inset: 0 }}
+          >
+            <Image
+              src={imageSrc}
+              alt={`GLADDY T-Shirt ${colorObj.label} ${side === "front" ? "Vorderseite" : "Rückseite"}`}
+              fill
+              style={{ objectFit: "cover", objectPosition: "center" }}
+              sizes="(max-width: 768px) 100vw, 45vw"
+              priority
+            />
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Front / Back toggle */}
+        <div style={{ position: "absolute", bottom: "1rem", left: "50%", transform: "translateX(-50%)", display: "flex", gap: "0.35rem", zIndex: 1 }}>
+          {(["front", "back"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setSide(s)}
+              style={{
+                background: side === s ? "rgba(230,34,140,0.9)" : "rgba(0,0,0,0.55)",
+                backdropFilter: "blur(8px)",
+                border: side === s ? "1px solid rgba(230,34,140,0.6)" : "1px solid rgba(255,255,255,0.12)",
+                color: "#fff",
+                fontSize: "0.62rem",
+                letterSpacing: "0.1em",
+                padding: "0.3rem 0.85rem",
+                borderRadius: "100px",
+                cursor: "pointer",
+                fontFamily: "inherit",
+                transition: "all 0.15s",
+                textTransform: "uppercase",
+              }}
+            >
+              {s === "front" ? "Vorne" : "Hinten"}
+            </button>
+          ))}
         </div>
       </div>
 
