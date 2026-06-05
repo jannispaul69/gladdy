@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import LegalLayout from "@/components/LegalLayout";
 
 export const metadata: Metadata = {
-  title: "Impressum — GLADDY Party Crew",
+  title: "Impressum — GLADDY",
   robots: { index: false },
 };
 
@@ -16,13 +16,13 @@ export default function ImpressumPage() {
       <h2>Anbieter</h2>
       <p>
         <strong>Schwietz Holding UG (haftungsbeschränkt)</strong><br />
-        <span className="placeholder">[Straße Hausnummer]</span><br />
-        <span className="placeholder">[PLZ Ort]</span><br />
+        Grambkermoorer Landstraße 22G<br />
+        28719 Bremen<br />
         Deutschland
       </p>
 
       <h2>Vertreten durch</h2>
-      <p>Geschäftsführer: <span className="placeholder">[Vor- und Nachname]</span></p>
+      <p>Geschäftsführer: Jannis Schwietz</p>
 
       <h2>Kontakt</h2>
       <p>
@@ -32,17 +32,17 @@ export default function ImpressumPage() {
 
       <h2>Handelsregister</h2>
       <p>
-        Registergericht: <span className="placeholder">[Amtsgericht XY]</span><br />
-        Registernummer: <span className="placeholder">[HRB XXXXX]</span>
+        Registergericht: Amtsgericht Bremen<br />
+        Registernummer: HRB 38787
       </p>
 
       <h2>Umsatzsteuer-Identifikationsnummer</h2>
-      <p>Gemäß § 27a UStG: <span className="placeholder">[DE XXXXXXXXX]</span></p>
+      <p>Gemäß § 27a UStG: DE358958147</p>
 
       <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
       <p>
-        <span className="placeholder">[Vor- und Nachname]</span><br />
-        <span className="placeholder">[Straße Hausnummer, PLZ Ort]</span>
+        Jannis Schwietz<br />
+        Grambkermoorer Landstraße 22G, 28719 Bremen
       </p>
 
       <h2>EU-Streitbeilegung</h2>

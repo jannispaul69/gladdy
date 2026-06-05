@@ -20,22 +20,26 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "GLADDY – Party Crew | Partyschlager & Ballermann",
+  title: "GLADDY | Partyschlager & Ballermann",
   description:
-    "GLADDY – der Partyschlager-Künstler aus dem Ruhrpott für unvergessliche Events, Bühnen und Feiern. Jetzt buchen!",
+    "GLADDY – Partyschlager-Künstler für unvergessliche Events, Bühnen und Feiern. Jetzt buchen!",
+  icons: {
+    icon: [{ url: "/gladdy-logo.png", type: "image/png" }],
+    apple: [{ url: "/gladdy-logo.png" }],
+  },
   openGraph: {
-    title: "GLADDY – Party Crew",
+    title: "GLADDY | Partyschlager & Ballermann",
     description: "Partyschlager & Ballermann — Hol dir die Party auf deine Bühne.",
     type: "website",
-    images: [{ url: "/og-image.png", width: 1080, height: 1350, alt: "GLADDY – Party Crew" }],
+    images: [{ url: "/og-image.png", width: 1080, height: 1350, alt: "GLADDY" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "GLADDY – Party Crew",
+    title: "GLADDY | Partyschlager & Ballermann",
     description: "Partyschlager & Ballermann — Jetzt buchen!",
     images: ["/og-image.png"],
   },
-  metadataBase: new URL("https://gladdy.de"),
+  metadataBase: new URL("https://gladdy-offiziell.de"),
 };
 
 export default function RootLayout({

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { socialLinks } from "@/content/social";
 
 function InstagramIcon() {
@@ -88,19 +89,12 @@ export default function Footer() {
                 background: "linear-gradient(135deg, rgba(255,61,154,0.15), rgba(176,21,112,0.15))",
               }}
             >
-              {/* height 170% renders the image taller than the container so overflow:hidden
-                  clips the bottom ~40% (PARTY CREW + glasses) while showing beer mugs + GLADDY */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/gladdy-logo.png"
                 alt="GLADDY Logo"
-                style={{
-                  width: "100%",
-                  height: "170%",
-                  objectFit: "cover",
-                  objectPosition: "top center",
-                  display: "block",
-                }}
+                width={56}
+                height={56}
+                style={{ objectFit: "cover", width: "100%", height: "100%" }}
               />
             </div>
             <div style={{ fontFamily: "var(--font-anton)", fontSize: "1.25rem", color: "#fff", letterSpacing: "0.1em", marginBottom: "1rem" }}>
