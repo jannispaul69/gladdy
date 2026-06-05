@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Anton, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import CookieBanner from "@/components/CookieBanner";
+import BookingModal from "@/components/BookingModal";
+import { BookingModalProvider } from "@/context/booking-modal";
 import "./globals.css";
 
 const anton = Anton({
@@ -44,8 +46,11 @@ export default function RootLayout({
   return (
     <html lang="de" className={`${anton.variable} ${inter.variable} h-full`}>
       <body className="min-h-full flex flex-col antialiased noise">
-        {children}
-        <CookieBanner />
+        <BookingModalProvider>
+          {children}
+          <BookingModal />
+          <CookieBanner />
+        </BookingModalProvider>
         <Analytics />
       </body>
     </html>

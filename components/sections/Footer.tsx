@@ -97,11 +97,8 @@ export default function Footer() {
                 style={{ objectFit: "cover", width: "100%", height: "100%" }}
               />
             </div>
-            <div style={{ fontFamily: "var(--font-anton)", fontSize: "1.25rem", color: "#fff", letterSpacing: "0.1em", marginBottom: "0.25rem" }}>
+            <div style={{ fontFamily: "var(--font-anton)", fontSize: "1.25rem", color: "#fff", letterSpacing: "0.1em", marginBottom: "1rem" }}>
               GLADDY
-            </div>
-            <div style={{ fontSize: "0.6rem", color: "var(--primary)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "1rem" }}>
-              Party Crew
             </div>
             <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.85rem", lineHeight: 1.65 }}>
               Partyschlager & Ballermann.<br />
@@ -205,7 +202,7 @@ export default function Footer() {
           }}
         >
           <p style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.75rem" }}>
-            © {new Date().getFullYear()} GLADDY – Party Crew. Alle Rechte vorbehalten.
+            © {new Date().getFullYear()} GLADDY. Alle Rechte vorbehalten.
           </p>
           <div style={{ display: "flex", gap: "1.5rem" }}>
             <a href="/impressum" className="hover-white" style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.75rem", textDecoration: "none", transition: "color 0.2s" }}>Impressum</a>

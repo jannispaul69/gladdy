@@ -23,11 +23,91 @@ const SIZE_CHART: { size: string; length: string; chest: string }[] = [
   { size: "4XL",length: "84 cm", chest: "72 cm" },
 ];
 
+const CHECKOUT_ENABLED = process.env.NEXT_PUBLIC_CHECKOUT_ENABLED === "true";
+const PRODUCT_PRICE_CENTS = 2490;
+
+function BuyButton({ selectedSize, selectedColor }: { selectedSize: Size | null; selectedColor: ColorId }) {
+  const [state, setState] = useState<"idle" | "loading" | "notified" | "error">("idle");
+
+  async function handleBuy() {
+    if (!selectedSize) {
+      alert("Bitte wähle zuerst eine Größe aus.");
+      return;
+    }
+    if (CHECKOUT_ENABLED) {
+      setState("loading");
+      try {
+        const res = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: [
+              {
+                name: "GLADDY Party Crew T-Shirt",
+                description: `Größe: ${selectedSize} · Farbe: ${selectedColor === "black" ? "Schwarz" : "Weiß"}`,
+                price_cents: PRODUCT_PRICE_CENTS,
+                quantity: 1,
+              },
+            ],
+          }),
+        });
+        const data = await res.json() as { url?: string; error?: string };
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          setState("error");
+        }
+      } catch {
+        setState("error");
+      }
+    } else {
+      setState("notified");
+    }
+  }
+
+  const label =
+    state === "loading" ? "Weiterleiten …"
+    : state === "notified" ? "✓ Du wirst benachrichtigt!"
+    : state === "error" ? "Fehler – bitte erneut versuchen"
+    : CHECKOUT_ENABLED ? "Jetzt kaufen"
+    : "Vorbestellen / Benachrichtigen";
+
+  return (
+    <>
+      <button
+        onClick={handleBuy}
+        disabled={state === "loading"}
+        style={{
+          background: state === "notified" ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #FF3D9A, #B01570)",
+          color: state === "error" ? "#f87171" : "#fff",
+          border: state === "error" ? "1px solid rgba(248,113,113,0.4)" : "none",
+          borderRadius: "8px",
+          padding: "0.875rem 1.5rem",
+          fontSize: "0.875rem",
+          letterSpacing: "0.08em",
+          cursor: state === "loading" ? "wait" : "pointer",
+          fontFamily: "inherit",
+          fontWeight: 600,
+          transition: "all 0.2s",
+          opacity: state === "loading" ? 0.7 : 1,
+          boxShadow: state === "notified" || state === "error" ? "none" : "0 4px 20px rgba(230,34,140,0.3)",
+        }}
+      >
+        {label}
+      </button>
+      {state === "idle" && !CHECKOUT_ENABLED && (
+        <p style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.25)", marginTop: "-0.5rem", lineHeight: 1.5 }}>
+          Shop öffnet bald — wir benachrichtigen dich, sobald das Shirt verfügbar ist.
+        </p>
+      )}
+    </>
+  );
+}
+
 function TShirtCard() {
   const [selectedColor, setSelectedColor] = useState<ColorId>("black");
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
   const [chartOpen, setChartOpen] = useState(false);
-  const [notified, setNotified] = useState(false);
 
   const colorObj = COLORS.find((c) => c.id === selectedColor)!;
 
@@ -127,17 +207,7 @@ function TShirtCard() {
         )}
 
         {/* CTA */}
-        <button
-          onClick={() => setNotified(true)}
-          style={{ background: notified ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #FF3D9A, #B01570)", color: "#fff", border: "none", borderRadius: "8px", padding: "0.875rem 1.5rem", fontSize: "0.875rem", letterSpacing: "0.08em", cursor: "pointer", fontFamily: "inherit", fontWeight: 600, transition: "all 0.2s", boxShadow: notified ? "none" : "0 4px 20px rgba(230,34,140,0.3)" }}
-        >
-          {notified ? "✓ Du wirst benachrichtigt!" : "Vorbestellen / Benachrichtigen"}
-        </button>
-        {!notified && (
-          <p style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.25)", marginTop: "-0.5rem", lineHeight: 1.5 }}>
-            Shop öffnet bald — wir benachrichtigen dich, sobald das Shirt verfügbar ist.
-          </p>
-        )}
+        <BuyButton selectedSize={selectedSize} selectedColor={selectedColor} />
       </div>
     </div>
   );

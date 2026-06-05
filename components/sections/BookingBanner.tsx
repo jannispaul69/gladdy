@@ -1,8 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useBookingModal } from "@/context/booking-modal";
 
 export default function BookingBanner() {
+  const { openModal } = useBookingModal();
+
   return (
     <section
       aria-label="Booking CTA"
@@ -48,14 +51,13 @@ export default function BookingBanner() {
           </div>
 
           <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap", alignItems: "center" }}>
-            <a
-              href="#booking"
-              onClick={(e) => { e.preventDefault(); document.querySelector("#booking")?.scrollIntoView({ behavior: "smooth" }); }}
+            <button
+              onClick={openModal}
               className="btn-primary"
-              style={{ padding: "1rem 2.75rem", borderRadius: "8px", textDecoration: "none", fontSize: "0.95rem", letterSpacing: "0.08em", display: "inline-block", fontFamily: "inherit" }}
+              style={{ padding: "1rem 2.75rem", borderRadius: "8px", border: "none", cursor: "pointer", fontSize: "0.95rem", letterSpacing: "0.08em", fontFamily: "inherit" }}
             >
               Jetzt anfragen
-            </a>
+            </button>
             <a
               href="mailto:booking@gladdy-offiziell.de"
               style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.85rem", textDecoration: "none", letterSpacing: "0.04em", transition: "color 0.2s" }}
