@@ -10,6 +10,7 @@ import {
   Music,
   ShoppingBag,
   ShoppingCart,
+  FolderOpen,
   LogOut,
 } from "lucide-react";
 import { adminLogout } from "@/app/actions/admin-auth";
@@ -21,6 +22,7 @@ const NAV = [
   { href: "/admin/songs", icon: Music, label: "Songs" },
   { href: "/admin/products", icon: ShoppingBag, label: "Produkte" },
   { href: "/admin/orders", icon: ShoppingCart, label: "Bestellungen" },
+  { href: "/admin/pressekit", icon: FolderOpen, label: "Pressematerial" },
 ];
 
 export default function AdminSidebar() {

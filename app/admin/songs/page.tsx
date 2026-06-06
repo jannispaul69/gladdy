@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Music } from "lucide-react";
 import { createSong, updateSong, deleteSong } from "@/app/actions/admin-songs";
 import DeleteButton from "@/app/admin/DeleteButton";
+import UploadField from "@/app/admin/UploadField";
 
 type SongRow = {
   id: string;
@@ -53,8 +54,7 @@ function SongForm({ song }: { song?: SongRow }) {
             <input type="text" name="youtube_id" className="input-pink" placeholder="dQw4w9WgXcQ" defaultValue={song?.youtube_id ?? ""} />
           </div>
           <div>
-            <label style={labelStyle}>Cover-URL</label>
-            <input type="url" name="cover_url" className="input-pink" placeholder="https://..." defaultValue={song?.cover_url ?? ""} />
+            <UploadField name="cover_url" folder="songs" defaultValue={song?.cover_url ?? ""} label="Cover-URL" />
           </div>
           <div>
             <label style={labelStyle}>Veröffentlichung</label>

@@ -25,8 +25,8 @@ const SIZE_CHART: { size: string; length: string; chest: string }[] = [
 ];
 
 const PRODUCT_IMAGES: Record<ColorId, { front: string; back: string }> = {
-  black: { front: "/merch-shirt-black-front.jpg", back: "/merch-shirt-black-back.jpg" },
-  white: { front: "/merch-shirt-white-front.jpg", back: "/merch-shirt-white-back.jpg" },
+  black: { front: "/merch-shirt-black-front.png", back: "/merch-shirt-black-back.png" },
+  white: { front: "/merch-shirt-white-front.png", back: "/merch-shirt-white-back.png" },
 };
 
 const CHECKOUT_ENABLED = process.env.NEXT_PUBLIC_CHECKOUT_ENABLED === "true";

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 import { createProduct, updateProduct, deleteProduct } from "@/app/actions/admin-products";
 import DeleteButton from "@/app/admin/DeleteButton";
+import UploadField from "@/app/admin/UploadField";
 
 const CATEGORIES = [
   { value: "shirt", label: "Shirt" },
@@ -85,8 +86,7 @@ function ProductForm({ product }: { product?: ProductRow }) {
             </select>
           </div>
           <div style={{ gridColumn: "span 2" }}>
-            <label style={labelStyle}>Bild-URL</label>
-            <input type="url" name="image_url" className="input-pink" placeholder="https://..." defaultValue={product?.image_url ?? ""} />
+            <UploadField name="image_url" folder="products" defaultValue={product?.image_url ?? ""} label="Bild-URL" />
           </div>
           <div style={{ gridColumn: "span 2" }}>
             <label style={labelStyle}>Beschreibung</label>
