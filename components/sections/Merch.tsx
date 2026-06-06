@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useActionState } from "react";
 import Image from "next/image";
 import { motion, useInView, AnimatePresence } from "framer-motion";
+import { subscribeToShopWaitlist } from "@/app/actions/shop-waitlist";
 
 const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"] as const;
 type Size = (typeof SIZES)[number];
@@ -32,81 +33,127 @@ const PRODUCT_IMAGES: Record<ColorId, { front: string; back: string }> = {
 const CHECKOUT_ENABLED = process.env.NEXT_PUBLIC_CHECKOUT_ENABLED === "true";
 const PRODUCT_PRICE_CENTS = 2490;
 
+function ShopNotifyForm() {
+  const [result, action, pending] = useActionState(subscribeToShopWaitlist, null);
+
+  if (result?.ok) {
+    return (
+      <div style={{ padding: "0.875rem 1rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.08)" }}>
+        <p style={{ color: "#4ade80", fontSize: "0.85rem", margin: 0 }}>✓ {result.message}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+      <p style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.35)", letterSpacing: "0.04em", margin: 0 }}>
+        Shop öffnet bald — trag dich ein und wir benachrichtigen dich.
+      </p>
+      <form action={action} style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        <input
+          type="email"
+          name="email"
+          required
+          placeholder="deine@email.de"
+          style={{
+            flex: 1,
+            minWidth: "160px",
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            borderRadius: "8px",
+            padding: "0.75rem 1rem",
+            color: "#fff",
+            fontSize: "0.875rem",
+            outline: "none",
+          }}
+        />
+        <button
+          type="submit"
+          disabled={pending}
+          style={{
+            background: "linear-gradient(135deg, #FF3D9A, #B01570)",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            padding: "0.75rem 1.25rem",
+            fontSize: "0.875rem",
+            letterSpacing: "0.06em",
+            cursor: pending ? "wait" : "pointer",
+            fontFamily: "inherit",
+            fontWeight: 600,
+            opacity: pending ? 0.7 : 1,
+            transition: "opacity 0.2s",
+            whiteSpace: "nowrap",
+            boxShadow: "0 4px 20px rgba(230,34,140,0.3)",
+          }}
+        >
+          {pending ? "…" : "Benachrichtigen"}
+        </button>
+      </form>
+      {result && !result.ok && (
+        <p style={{ fontSize: "0.75rem", color: "#f87171", margin: 0 }}>{result.message}</p>
+      )}
+    </div>
+  );
+}
+
 function BuyButton({ selectedSize, selectedColor }: { selectedSize: Size | null; selectedColor: ColorId }) {
-  const [state, setState] = useState<"idle" | "loading" | "notified" | "error">("idle");
+  const [state, setState] = useState<"idle" | "loading" | "error">("idle");
 
   async function handleBuy() {
     if (!selectedSize) {
       alert("Bitte wähle zuerst eine Größe aus.");
       return;
     }
-    if (CHECKOUT_ENABLED) {
-      setState("loading");
-      try {
-        const res = await fetch("/api/stripe/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            items: [
-              {
-                name: "GLADDY Party Crew T-Shirt",
-                description: `Größe: ${selectedSize} · Farbe: ${selectedColor === "black" ? "Schwarz" : "Weiß"}`,
-                price_cents: PRODUCT_PRICE_CENTS,
-                quantity: 1,
-              },
-            ],
-          }),
-        });
-        const data = await res.json() as { url?: string; error?: string };
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          setState("error");
-        }
-      } catch {
+    setState("loading");
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: [
+            {
+              name: "GLADDY Party Crew T-Shirt",
+              description: `Größe: ${selectedSize} · Farbe: ${selectedColor === "black" ? "Schwarz" : "Weiß"}`,
+              price_cents: PRODUCT_PRICE_CENTS,
+              quantity: 1,
+            },
+          ],
+        }),
+      });
+      const data = await res.json() as { url?: string; error?: string };
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
         setState("error");
       }
-    } else {
-      setState("notified");
+    } catch {
+      setState("error");
     }
   }
 
-  const label =
-    state === "loading" ? "Weiterleiten …"
-    : state === "notified" ? "✓ Du wirst benachrichtigt!"
-    : state === "error" ? "Fehler – bitte erneut versuchen"
-    : CHECKOUT_ENABLED ? "Jetzt kaufen"
-    : "Vorbestellen / Benachrichtigen";
-
   return (
-    <>
-      <button
-        onClick={handleBuy}
-        disabled={state === "loading"}
-        style={{
-          background: state === "notified" ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #FF3D9A, #B01570)",
-          color: state === "error" ? "#f87171" : "#fff",
-          border: state === "error" ? "1px solid rgba(248,113,113,0.4)" : "none",
-          borderRadius: "8px",
-          padding: "0.875rem 1.5rem",
-          fontSize: "0.875rem",
-          letterSpacing: "0.08em",
-          cursor: state === "loading" ? "wait" : "pointer",
-          fontFamily: "inherit",
-          fontWeight: 600,
-          transition: "all 0.2s",
-          opacity: state === "loading" ? 0.7 : 1,
-          boxShadow: state === "notified" || state === "error" ? "none" : "0 4px 20px rgba(230,34,140,0.3)",
-        }}
-      >
-        {label}
-      </button>
-      {state === "idle" && !CHECKOUT_ENABLED && (
-        <p style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.25)", marginTop: "-0.5rem", lineHeight: 1.5 }}>
-          Shop öffnet bald — wir benachrichtigen dich, sobald das Shirt verfügbar ist.
-        </p>
-      )}
-    </>
+    <button
+      onClick={handleBuy}
+      disabled={state === "loading"}
+      style={{
+        background: "linear-gradient(135deg, #FF3D9A, #B01570)",
+        color: state === "error" ? "#f87171" : "#fff",
+        border: state === "error" ? "1px solid rgba(248,113,113,0.4)" : "none",
+        borderRadius: "8px",
+        padding: "0.875rem 1.5rem",
+        fontSize: "0.875rem",
+        letterSpacing: "0.08em",
+        cursor: state === "loading" ? "wait" : "pointer",
+        fontFamily: "inherit",
+        fontWeight: 600,
+        transition: "all 0.2s",
+        opacity: state === "loading" ? 0.7 : 1,
+        boxShadow: state === "error" ? "none" : "0 4px 20px rgba(230,34,140,0.3)",
+      }}
+    >
+      {state === "loading" ? "Weiterleiten …" : state === "error" ? "Fehler – erneut versuchen" : "Jetzt kaufen"}
+    </button>
   );
 }
 
@@ -249,7 +296,10 @@ function TShirtCard() {
         )}
 
         {/* CTA */}
-        <BuyButton selectedSize={selectedSize} selectedColor={selectedColor} />
+        {CHECKOUT_ENABLED
+          ? <BuyButton selectedSize={selectedSize} selectedColor={selectedColor} />
+          : <ShopNotifyForm />
+        }
       </div>
     </div>
   );

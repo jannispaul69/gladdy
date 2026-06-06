@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Calendar, Music, ShoppingBag, ShoppingCart, TrendingUp } from "lucide-react";
+import { FileText, Calendar, Music, ShoppingBag, ShoppingCart, TrendingUp, Bell } from "lucide-react";
 
 async function getStats() {
   try {
@@ -7,7 +7,7 @@ async function getStats() {
     const supabase = getSupabaseAdmin();
     const today = new Date().toISOString().split("T")[0];
 
-    const [newBookings, upcomingEvents, activeProducts, songCount, recentBookings] =
+    const [newBookings, upcomingEvents, activeProducts, songCount, recentBookings, waitlist, recentWaitlist] =
       await Promise.all([
         supabase.from("bookings").select("id", { count: "exact", head: true }).eq("status", "neu"),
         supabase.from("events").select("id", { count: "exact", head: true }).gte("date", today),
@@ -18,6 +18,12 @@ async function getStats() {
           .select("id, created_at, vorname, nachname, veranstaltungsname, veranstaltungsdatum, status")
           .order("created_at", { ascending: false })
           .limit(6),
+        supabase.from("shop_waitlist").select("id", { count: "exact", head: true }),
+        supabase
+          .from("shop_waitlist")
+          .select("id, email, created_at")
+          .order("created_at", { ascending: false })
+          .limit(8),
       ]);
 
     return {
@@ -26,6 +32,8 @@ async function getStats() {
       activeProductCount: activeProducts.count ?? 0,
       songCount: songCount.count ?? 0,
       recentBookings: recentBookings.data ?? [],
+      waitlistCount: waitlist.count ?? 0,
+      recentWaitlist: recentWaitlist.data ?? [],
     };
   } catch {
     return {
@@ -34,6 +42,8 @@ async function getStats() {
       activeProductCount: 0,
       songCount: 0,
       recentBookings: [],
+      waitlistCount: 0,
+      recentWaitlist: [],
     };
   }
 }
@@ -84,6 +94,7 @@ export default async function AdminDashboard() {
     { label: "Kommende Termine", value: stats.upcomingEventCount, icon: Calendar, href: "/admin/events", color: "#4ade80" },
     { label: "Aktive Produkte", value: stats.activeProductCount, icon: ShoppingBag, href: "/admin/products", color: "#f59e0b" },
     { label: "Songs", value: stats.songCount, icon: Music, href: "/admin/songs", color: "var(--primary)" },
+    { label: "Shop-Warteliste", value: stats.waitlistCount, icon: Bell, href: "#waitlist", color: "#a78bfa" },
   ];
 
   return (
@@ -300,6 +311,47 @@ export default async function AdminDashboard() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+      </div>
+
+      {/* Shop waitlist */}
+      <div id="waitlist" style={{ marginTop: "2.5rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+          <h2 style={{ fontSize: "0.75rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", fontWeight: 500 }}>
+            Shop-Warteliste ({stats.waitlistCount})
+          </h2>
+        </div>
+        {stats.recentWaitlist.length === 0 ? (
+          <div style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "2rem", textAlign: "center", color: "rgba(255,255,255,0.25)", fontSize: "0.875rem" }}>
+            Noch keine Einträge.
+          </div>
+        ) : (
+          <div style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", overflow: "hidden" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: "#1C1C1C" }}>
+                  {["E-Mail", "Eingetragen am"].map((h) => (
+                    <th key={h} style={{ padding: "0.7rem 1rem", textAlign: "left", fontSize: "0.65rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", fontWeight: 500 }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(stats.recentWaitlist as { id: string; email: string; created_at: string }[]).map((entry) => (
+                  <tr key={entry.id} style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                    <td style={{ padding: "0.8rem 1rem", fontSize: "0.875rem", color: "rgba(255,255,255,0.7)" }}>{entry.email}</td>
+                    <td style={{ padding: "0.8rem 1rem", fontSize: "0.8rem", color: "rgba(255,255,255,0.35)", whiteSpace: "nowrap" }}>
+                      {new Date(entry.created_at).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {stats.waitlistCount > 8 && (
+              <div style={{ padding: "0.75rem 1rem", borderTop: "1px solid rgba(255,255,255,0.04)", fontSize: "0.75rem", color: "rgba(255,255,255,0.25)" }}>
+                +{stats.waitlistCount - 8} weitere Einträge
+              </div>
+            )}
           </div>
         )}
       </div>
