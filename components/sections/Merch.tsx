@@ -168,7 +168,7 @@ function TShirtCard() {
 
   return (
     <div
-      style={{ background: "var(--surface)", border: "1px solid rgba(230,34,140,0.2)", borderRadius: "12px", overflow: "hidden", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}
+      style={{ background: "var(--surface)", border: "1px solid rgba(230,34,140,0.2)", borderRadius: "12px", overflow: "hidden", display: "grid", gap: 0 }}
       className="merch-product-grid"
     >
       {/* Product image with front/back toggle */}
@@ -370,28 +370,15 @@ export default function Merch() {
           initial={{ opacity: 0, y: 24 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, delay: 0.3 }}
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginTop: "1.5rem" }}
+          style={{ display: "grid", gap: "1.5rem", marginTop: "1.5rem" }}
           className="merch-bottom-grid"
         >
           <HoodieTeaser />
 
           {/* Newsletter */}
           <div style={{ background: "rgba(230,34,140,0.06)", border: "1px solid rgba(230,34,140,0.2)", borderRadius: "12px", padding: "2rem 1.75rem", display: "flex", flexDirection: "column", justifyContent: "center", gap: "1rem" }}>
-            <div>
-              <p style={{ fontFamily: "var(--font-anton)", fontSize: "1.3rem", color: "#fff", letterSpacing: "0.06em", marginBottom: "0.4rem" }}>SHOP-LAUNCH-ALARM</p>
-              <p style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.5)", lineHeight: 1.65 }}>Trag dich ein — du erfährst es als Erstes, wenn der Shop öffnet und neue Produkte verfügbar sind.</p>
-            </div>
-            <form onSubmit={(e) => e.preventDefault()} style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
-              <input
-                type="email"
-                placeholder="deine@email.de"
-                className="input-pink"
-                style={{ flex: "1 1 180px", minWidth: 0, fontSize: "0.9rem" }}
-              />
-              <button type="submit" className="btn-primary" style={{ padding: "0.75rem 1.25rem", borderRadius: "7px", border: "none", cursor: "pointer", fontSize: "0.8rem", letterSpacing: "0.06em", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-                Eintragen
-              </button>
-            </form>
+            <p style={{ fontFamily: "var(--font-anton)", fontSize: "1.3rem", color: "#fff", letterSpacing: "0.06em" }}>SHOP-LAUNCH-ALARM</p>
+            <ShopNotifyForm />
           </div>
         </motion.div>
       </div>

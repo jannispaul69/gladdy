@@ -167,9 +167,9 @@ export default function Footer() {
               {[
                 { label: "Booking anfragen", href: "#booking" },
                 { label: "Songs hören", href: "#songs" },
-                { label: "Impressum", href: "/impressum" },
-                { label: "Datenschutz", href: "/datenschutz" },
-                { label: "AGB", href: "/agb" },
+                { label: "Über mich", href: "#ueber" },
+                { label: "Events & Termine", href: "#events" },
+                { label: "Merch", href: "#merch" },
               ].map((link) => (
                 <a
                   key={link.href}

@@ -15,9 +15,9 @@ const EVENT_TYPES = [
 ];
 
 const STATS = [
-  { value: "500+", label: "Shows" },
-  { value: "10+", label: "Jahre Erfahrung" },
-  { value: "DE · AT · CH", label: "Auftrittsorte" },
+  { value: "50+", label: "Shows" },
+  { value: "10+", label: "Jahre Leidenschaft" },
+  { value: "DE · AT · ES", label: "Auftrittsorte" },
   { value: "∞", label: "Energie auf der Bühne" },
 ];
 
