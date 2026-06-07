@@ -241,6 +241,7 @@ export default async function AdminDashboard() {
               overflow: "hidden",
             }}
           >
+            <div className="admin-table-scroll">
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: "#1C1C1C" }}>
@@ -311,6 +312,7 @@ export default async function AdminDashboard() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>
@@ -328,6 +330,7 @@ export default async function AdminDashboard() {
           </div>
         ) : (
           <div style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", overflow: "hidden" }}>
+            <div className="admin-table-scroll">
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: "#1C1C1C" }}>
@@ -347,6 +350,7 @@ export default async function AdminDashboard() {
                 ))}
               </tbody>
             </table>
+            </div>
             {stats.waitlistCount > 8 && (
               <div style={{ padding: "0.75rem 1rem", borderTop: "1px solid rgba(255,255,255,0.04)", fontSize: "0.75rem", color: "rgba(255,255,255,0.25)" }}>
                 +{stats.waitlistCount - 8} weitere Einträge

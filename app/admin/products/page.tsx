@@ -134,6 +134,7 @@ export default async function ProductsPage({
         <div style={emptyState}>Noch keine Produkte angelegt.</div>
       ) : (
         <div style={tableWrapper}>
+          <div className="admin-table-scroll">
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "#1C1C1C" }}>
@@ -175,6 +176,7 @@ export default async function ProductsPage({
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

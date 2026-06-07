@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   LayoutDashboard,
   FileText,
@@ -12,6 +13,8 @@ import {
   ShoppingCart,
   FolderOpen,
   LogOut,
+  Menu,
+  X,
 } from "lucide-react";
 import { adminLogout } from "@/app/actions/admin-auth";
 
@@ -27,22 +30,36 @@ const NAV = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
+  function close() { setOpen(false); }
 
   return (
-    <aside
-      style={{
-        width: "220px",
-        flexShrink: 0,
-        background: "#0D0D0D",
-        borderRight: "1px solid rgba(230,34,140,0.1)",
-        display: "flex",
-        flexDirection: "column",
-        position: "sticky",
-        top: 0,
-        height: "100vh",
-        overflow: "auto",
-      }}
-    >
+    <>
+      {/* Mobile top-bar hamburger */}
+      <button className="admin-hamburger" onClick={() => setOpen(true)} aria-label="Menü öffnen">
+        <Menu size={18} strokeWidth={1.75} />
+        <span>GLADDY Admin</span>
+      </button>
+
+      {/* Backdrop */}
+      {open && <div className="admin-backdrop" onClick={close} aria-hidden />}
+
+      <aside
+        className={`admin-sidebar-panel${open ? " open" : ""}`}
+        style={{
+          width: "220px",
+          flexShrink: 0,
+          background: "#0D0D0D",
+          borderRight: "1px solid rgba(230,34,140,0.1)",
+          display: "flex",
+          flexDirection: "column",
+          position: "sticky",
+          top: 0,
+          height: "100vh",
+          overflow: "auto",
+        }}
+      >
       {/* Logo */}
       <div
         style={{
@@ -53,6 +70,7 @@ export default function AdminSidebar() {
           gap: "0.75rem",
         }}
       >
+
         <div
           style={{
             width: "36px",
@@ -71,29 +89,18 @@ export default function AdminSidebar() {
             style={{ objectFit: "cover", width: "100%", height: "100%" }}
           />
         </div>
-        <div>
-          <div
-            style={{
-              fontFamily: "var(--font-anton)",
-              fontSize: "0.95rem",
-              color: "#fff",
-              letterSpacing: "0.08em",
-              lineHeight: 1.1,
-            }}
-          >
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: "var(--font-anton)", fontSize: "0.95rem", color: "#fff", letterSpacing: "0.08em", lineHeight: 1.1 }}>
             GLADDY
           </div>
-          <div
-            style={{
-              fontSize: "0.55rem",
-              color: "var(--primary)",
-              letterSpacing: "0.18em",
-              textTransform: "uppercase",
-            }}
-          >
+          <div style={{ fontSize: "0.55rem", color: "var(--primary)", letterSpacing: "0.18em", textTransform: "uppercase" }}>
             Admin
           </div>
         </div>
+        {/* Close button — mobile only */}
+        <button className="admin-close-btn" onClick={close} aria-label="Menü schließen">
+          <X size={16} strokeWidth={1.75} />
+        </button>
       </div>
 
       {/* Nav */}
@@ -112,6 +119,7 @@ export default function AdminSidebar() {
             <Link
               key={href}
               href={href}
+              onClick={close}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -168,5 +176,6 @@ export default function AdminSidebar() {
         </form>
       </div>
     </aside>
+    </>
   );
 }

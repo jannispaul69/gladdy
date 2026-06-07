@@ -122,6 +122,7 @@ export default async function BookingsPage({
         </div>
       ) : (
         <div style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", overflow: "hidden" }}>
+          <div className="admin-table-scroll">
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "#1C1C1C" }}>
@@ -208,6 +209,7 @@ export default async function BookingsPage({
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

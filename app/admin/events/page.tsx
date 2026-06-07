@@ -133,6 +133,7 @@ export default async function EventsPage({
         <div style={emptyState}>Noch keine Termine eingetragen.</div>
       ) : (
         <div style={tableWrapper}>
+          <div className={tableInner}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "#1C1C1C" }}>
@@ -169,6 +170,7 @@ export default async function EventsPage({
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>
@@ -205,6 +207,7 @@ const tableWrapper: React.CSSProperties = {
   borderRadius: "8px",
   overflow: "hidden",
 };
+const tableInner = "admin-table-scroll";
 
 const thStyle: React.CSSProperties = {
   padding: "0.7rem 1rem",

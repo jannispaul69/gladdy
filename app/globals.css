@@ -282,3 +282,88 @@ body {
 @media (min-width: 640px) {
   .merch-bottom-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ── Admin — mobile responsive ─────────────────────────────── */
+
+/* Hamburger top-bar: hidden on desktop */
+.admin-hamburger { display: none; }
+/* Close button and backdrop: hidden on desktop */
+.admin-close-btn { display: none !important; }
+.admin-backdrop  { display: none !important; }
+
+@media (max-width: 767px) {
+  /* Full-width top header bar with menu icon */
+  .admin-hamburger {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 52px;
+    background: #0D0D0D;
+    border: none;
+    border-bottom: 1px solid rgba(230,34,140,0.15);
+    padding: 0 1rem;
+    z-index: 200;
+    cursor: pointer;
+    color: rgba(255,255,255,0.75);
+    font-family: inherit;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Sidebar: fixed overlay, slides in from left */
+  .admin-sidebar-panel {
+    position: fixed !important;
+    top: 0; left: 0;
+    height: 100vh !important;
+    width: 260px !important;
+    z-index: 400;
+    transform: translateX(-100%);
+    transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 4px 0 32px rgba(0,0,0,0.7);
+  }
+  .admin-sidebar-panel.open { transform: translateX(0); }
+
+  /* Close button inside sidebar */
+  .admin-close-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    padding: 0.35rem;
+    flex-shrink: 0;
+  }
+
+  /* Dark overlay behind sidebar */
+  .admin-backdrop {
+    display: block !important;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 350;
+  }
+
+  /* Push page content below mobile header */
+  .admin-main > div {
+    padding-top: 4rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Tables: enable horizontal scroll */
+  .admin-table-scroll {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    /* border-radius clip stays on outer wrapper */
+  }
+  .admin-table-scroll table {
+    min-width: 540px;
+  }
+}
