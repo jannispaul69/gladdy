@@ -38,8 +38,8 @@ const SIZE_CHART: { size: string; length: string; chest: string }[] = [
 ];
 
 const SHIRT_IMAGES: Record<ColorId, { front: string; back: string }> = {
-  black: { front: "/merch-shirt-black-front.png", back: "/merch-shirt-black-back.png" },
-  white: { front: "/merch-shirt-white-front.png", back: "/merch-shirt-white-back.png" },
+  black: { front: "/products/shirt-men-black-front.png", back: "/products/shirt-men-black-back.png" },
+  white: { front: "/products/shirt-men-white-front.png", back: "/products/shirt-men-white-back.png" },
 };
 
 const CHECKOUT_ENABLED = process.env.NEXT_PUBLIC_CHECKOUT_ENABLED === "true";
