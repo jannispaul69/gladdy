@@ -19,14 +19,14 @@ export type Product = {
 
 const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"] as const;
 type Size = (typeof SIZES)[number];
+type ColorId = "black" | "white";
 
 const COLORS = [
-  { id: "black", label: "Schwarz", hex: "#141414", border: "rgba(255,255,255,0.25)" },
-  { id: "white", label: "Weiß", hex: "#EFEFEF", border: "rgba(255,255,255,0.5)" },
-] as const;
-type ColorId = (typeof COLORS)[number]["id"];
+  { id: "black" as ColorId, label: "Schwarz", hex: "#141414", border: "rgba(255,255,255,0.25)" },
+  { id: "white" as ColorId, label: "Weiß",   hex: "#EFEFEF", border: "rgba(255,255,255,0.5)" },
+];
 
-const SIZE_CHART: { size: string; length: string; chest: string }[] = [
+const SIZE_CHART = [
   { size: "XS",  length: "70 cm", chest: "47 cm" },
   { size: "S",   length: "72 cm", chest: "50 cm" },
   { size: "M",   length: "74 cm", chest: "53 cm" },
@@ -37,9 +37,12 @@ const SIZE_CHART: { size: string; length: string; chest: string }[] = [
   { size: "4XL", length: "84 cm", chest: "72 cm" },
 ];
 
-const SHIRT_IMAGES: Record<ColorId, { front: string; back: string }> = {
-  black: { front: "/products/shirt-men-black-front.png", back: "/products/shirt-men-black-back.png" },
-  white: { front: "/products/shirt-men-white-front.png", back: "/products/shirt-men-white-back.png" },
+const CATEGORY_LABELS: Record<string, string> = {
+  shirt: "T-Shirt",
+  hoodie: "Hoodie",
+  mug: "Tasse",
+  cap: "Cap",
+  other: "Merch",
 };
 
 const CHECKOUT_ENABLED = process.env.NEXT_PUBLIC_CHECKOUT_ENABLED === "true";
@@ -71,15 +74,11 @@ function ShopNotifyForm() {
           required
           placeholder="deine@email.de"
           style={{
-            flex: 1,
-            minWidth: "160px",
+            flex: 1, minWidth: "150px",
             background: "rgba(255,255,255,0.05)",
             border: "1px solid rgba(255,255,255,0.12)",
-            borderRadius: "8px",
-            padding: "0.75rem 1rem",
-            color: "#fff",
-            fontSize: "0.875rem",
-            outline: "none",
+            borderRadius: "8px", padding: "0.7rem 1rem",
+            color: "#fff", fontSize: "0.85rem", outline: "none",
           }}
         />
         <button
@@ -87,19 +86,12 @@ function ShopNotifyForm() {
           disabled={pending}
           style={{
             background: "linear-gradient(135deg, #FF3D9A, #B01570)",
-            color: "#fff",
-            border: "none",
-            borderRadius: "8px",
-            padding: "0.75rem 1.25rem",
-            fontSize: "0.875rem",
-            letterSpacing: "0.06em",
-            cursor: pending ? "wait" : "pointer",
-            fontFamily: "inherit",
-            fontWeight: 600,
-            opacity: pending ? 0.7 : 1,
-            transition: "opacity 0.2s",
-            whiteSpace: "nowrap",
-            boxShadow: "0 4px 20px rgba(230,34,140,0.3)",
+            color: "#fff", border: "none", borderRadius: "8px",
+            padding: "0.7rem 1.1rem", fontSize: "0.85rem",
+            letterSpacing: "0.06em", cursor: pending ? "wait" : "pointer",
+            fontFamily: "inherit", fontWeight: 600,
+            opacity: pending ? 0.7 : 1, transition: "opacity 0.2s",
+            whiteSpace: "nowrap", boxShadow: "0 4px 16px rgba(230,34,140,0.3)",
           }}
         >
           {pending ? "…" : "Benachrichtigen"}
@@ -112,80 +104,49 @@ function ShopNotifyForm() {
   );
 }
 
-function BuyButton({ selectedSize, selectedColor, product }: { selectedSize: Size | null; selectedColor: ColorId; product: Product }) {
-  const [state, setState] = useState<"idle" | "loading" | "error">("idle");
-
-  async function handleBuy() {
-    if (!selectedSize) {
-      alert("Bitte wähle zuerst eine Größe aus.");
-      return;
-    }
-    setState("loading");
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: [{
-            name: product.title,
-            description: `Größe: ${selectedSize} · Farbe: ${selectedColor === "black" ? "Schwarz" : "Weiß"}`,
-            price_cents: product.price_cents,
-            quantity: 1,
-          }],
-        }),
-      });
-      const data = await res.json() as { url?: string; error?: string };
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setState("error");
-      }
-    } catch {
-      setState("error");
-    }
-  }
-
-  return (
-    <button
-      onClick={handleBuy}
-      disabled={state === "loading"}
-      style={{
-        background: "linear-gradient(135deg, #FF3D9A, #B01570)",
-        color: state === "error" ? "#f87171" : "#fff",
-        border: state === "error" ? "1px solid rgba(248,113,113,0.4)" : "none",
-        borderRadius: "8px",
-        padding: "0.875rem 1.5rem",
-        fontSize: "0.875rem",
-        letterSpacing: "0.08em",
-        cursor: state === "loading" ? "wait" : "pointer",
-        fontFamily: "inherit",
-        fontWeight: 600,
-        transition: "all 0.2s",
-        opacity: state === "loading" ? 0.7 : 1,
-        boxShadow: state === "error" ? "none" : "0 4px 20px rgba(230,34,140,0.3)",
-      }}
-    >
-      {state === "loading" ? "Weiterleiten …" : state === "error" ? "Fehler – erneut versuchen" : "Jetzt kaufen"}
-    </button>
-  );
+function getShirtImages(product: Product) {
+  const gender =
+    product.title.toLowerCase().includes("damen") || product.image_url?.includes("women")
+      ? "women"
+      : "men";
+  return {
+    black: { front: `/products/shirt-${gender}-black-front.png`, back: `/products/shirt-${gender}-black-back.png` },
+    white: { front: `/products/shirt-${gender}-white-front.png`, back: `/products/shirt-${gender}-white-back.png` },
+  };
 }
 
-function TShirtCard({ product }: { product: Product | null }) {
+function FeaturedShirtCard({ product }: { product: Product }) {
   const [selectedColor, setSelectedColor] = useState<ColorId>("black");
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
-  const [chartOpen, setChartOpen] = useState(false);
   const [side, setSide] = useState<"front" | "back">("front");
 
   const colorObj = COLORS.find((c) => c.id === selectedColor)!;
-  const imageSrc = SHIRT_IMAGES[selectedColor][side];
-  const priceCents = product?.price_cents ?? 2490;
+  const imgs = getShirtImages(product);
+  const imageSrc = imgs[selectedColor][side];
+  const isWomen = product.title.toLowerCase().includes("damen") || product.image_url?.includes("women");
+  const genderLabel = isWomen ? "Damen T-Shirt" : "Herren T-Shirt";
 
   return (
     <div
-      style={{ background: "var(--surface)", border: "1px solid rgba(230,34,140,0.2)", borderRadius: "12px", overflow: "hidden", display: "grid", gap: 0 }}
-      className="merch-product-grid"
+      style={{
+        background: "var(--surface)",
+        border: "1px solid rgba(230,34,140,0.18)",
+        borderRadius: "14px",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
     >
-      <div style={{ background: selectedColor === "black" ? "#111" : "#e8e8e8", position: "relative", aspectRatio: "1/1", minHeight: "320px", transition: "background 0.4s", overflow: "hidden" }}>
+      {/* Image */}
+      <div
+        style={{
+          background: selectedColor === "black" ? "#111" : "#e8e8e8",
+          position: "relative",
+          aspectRatio: "4/3",
+          transition: "background 0.4s",
+          overflow: "hidden",
+        }}
+      >
         <AnimatePresence mode="wait">
           <motion.div
             key={imageSrc}
@@ -197,16 +158,17 @@ function TShirtCard({ product }: { product: Product | null }) {
           >
             <Image
               src={imageSrc}
-              alt={`GLADDY T-Shirt ${colorObj.label} ${side === "front" ? "Vorderseite" : "Rückseite"}`}
+              alt={`${product.title} ${colorObj.label} ${side === "front" ? "Vorderseite" : "Rückseite"}`}
               fill
               style={{ objectFit: "cover", objectPosition: "center" }}
-              sizes="(max-width: 768px) 100vw, 45vw"
+              sizes="(max-width: 768px) 100vw, 50vw"
               priority
             />
           </motion.div>
         </AnimatePresence>
 
-        <div style={{ position: "absolute", bottom: "1rem", left: "50%", transform: "translateX(-50%)", display: "flex", gap: "0.35rem", zIndex: 1 }}>
+        {/* Front/Back toggle */}
+        <div style={{ position: "absolute", bottom: "0.875rem", left: "50%", transform: "translateX(-50%)", display: "flex", gap: "0.35rem", zIndex: 1 }}>
           {(["front", "back"] as const).map((s) => (
             <button
               key={s}
@@ -215,15 +177,10 @@ function TShirtCard({ product }: { product: Product | null }) {
                 background: side === s ? "rgba(230,34,140,0.9)" : "rgba(0,0,0,0.55)",
                 backdropFilter: "blur(8px)",
                 border: side === s ? "1px solid rgba(230,34,140,0.6)" : "1px solid rgba(255,255,255,0.12)",
-                color: "#fff",
-                fontSize: "0.62rem",
-                letterSpacing: "0.1em",
-                padding: "0.3rem 0.85rem",
-                borderRadius: "100px",
-                cursor: "pointer",
-                fontFamily: "inherit",
-                transition: "all 0.15s",
-                textTransform: "uppercase",
+                color: "#fff", fontSize: "0.62rem", letterSpacing: "0.1em",
+                padding: "0.3rem 0.85rem", borderRadius: "100px",
+                cursor: "pointer", fontFamily: "inherit",
+                textTransform: "uppercase", transition: "all 0.15s",
               }}
             >
               {s === "front" ? "Vorne" : "Hinten"}
@@ -232,18 +189,26 @@ function TShirtCard({ product }: { product: Product | null }) {
         </div>
       </div>
 
-      <div style={{ padding: "2rem 1.75rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      {/* Details */}
+      <div style={{ padding: "1.5rem 1.75rem", display: "flex", flexDirection: "column", gap: "1.1rem" }}>
         <div>
-          <p style={{ fontSize: "0.6rem", letterSpacing: "0.18em", color: "var(--primary)", textTransform: "uppercase", marginBottom: "0.4rem" }}>Unisex T-Shirt</p>
-          <h3 style={{ fontFamily: "var(--font-anton)", fontSize: "1.5rem", color: "#fff", letterSpacing: "0.05em", lineHeight: 1.1, marginBottom: "0.5rem" }}>
-            GLADDY<br />PARTY CREW
-          </h3>
-          <p style={{ fontSize: "1.5rem", fontWeight: 700, color: "#FFB347", letterSpacing: "-0.01em" }}>{formatPrice(priceCents)}</p>
-          <p style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", marginTop: "0.25rem" }}>inkl. MwSt. · zzgl. Versand</p>
+          <p style={{ fontSize: "0.6rem", letterSpacing: "0.18em", color: "var(--primary)", textTransform: "uppercase", marginBottom: "0.4rem" }}>
+            {genderLabel}
+          </p>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
+            <h3 style={{ fontFamily: "var(--font-anton)", fontSize: "1.5rem", color: "#fff", letterSpacing: "0.05em", lineHeight: 1.1 }}>
+              GLADDY PARTY CREW
+            </h3>
+            <div style={{ textAlign: "right" }}>
+              <p style={{ fontSize: "1.5rem", fontWeight: 700, color: "#FFB347", letterSpacing: "-0.01em" }}>{formatPrice(product.price_cents)}</p>
+              <p style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.3)" }}>inkl. MwSt. · zzgl. Versand</p>
+            </div>
+          </div>
         </div>
 
+        {/* Color */}
         <div>
-          <p style={{ fontSize: "0.68rem", letterSpacing: "0.1em", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", marginBottom: "0.6rem" }}>
+          <p style={{ fontSize: "0.65rem", letterSpacing: "0.1em", color: "rgba(255,255,255,0.45)", textTransform: "uppercase", marginBottom: "0.5rem" }}>
             Farbe: <span style={{ color: "#fff" }}>{colorObj.label}</span>
           </p>
           <div style={{ display: "flex", gap: "0.6rem" }}>
@@ -252,27 +217,37 @@ function TShirtCard({ product }: { product: Product | null }) {
                 key={c.id}
                 onClick={() => setSelectedColor(c.id)}
                 aria-label={c.label}
-                style={{ width: "32px", height: "32px", borderRadius: "50%", background: c.hex, border: selectedColor === c.id ? "2px solid var(--primary)" : `1.5px solid ${c.border}`, cursor: "pointer", outline: "none", transition: "border-color 0.2s, transform 0.15s", transform: selectedColor === c.id ? "scale(1.15)" : "scale(1)", boxShadow: selectedColor === c.id ? "0 0 0 2px rgba(230,34,140,0.3)" : "none" }}
+                style={{
+                  width: "28px", height: "28px", borderRadius: "50%", background: c.hex,
+                  border: selectedColor === c.id ? "2px solid var(--primary)" : `1.5px solid ${c.border}`,
+                  cursor: "pointer", outline: "none",
+                  transform: selectedColor === c.id ? "scale(1.15)" : "scale(1)",
+                  boxShadow: selectedColor === c.id ? "0 0 0 2px rgba(230,34,140,0.3)" : "none",
+                  transition: "all 0.15s",
+                }}
               />
             ))}
           </div>
         </div>
 
+        {/* Size */}
         <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
-            <p style={{ fontSize: "0.68rem", letterSpacing: "0.1em", color: "rgba(255,255,255,0.5)", textTransform: "uppercase" }}>
-              Größe{selectedSize ? `: ${selectedSize}` : ""}
-            </p>
-            <button onClick={() => setChartOpen(!chartOpen)} style={{ background: "none", border: "none", color: "var(--primary)", fontSize: "0.68rem", cursor: "pointer", letterSpacing: "0.06em", padding: 0, fontFamily: "inherit" }}>
-              {chartOpen ? "Tabelle schließen ↑" : "Größentabelle ↓"}
-            </button>
-          </div>
-          <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+          <p style={{ fontSize: "0.65rem", letterSpacing: "0.1em", color: "rgba(255,255,255,0.45)", textTransform: "uppercase", marginBottom: "0.5rem" }}>
+            Größe{selectedSize ? `: ${selectedSize}` : " wählen"}
+          </p>
+          <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
             {SIZES.map((s) => (
               <button
                 key={s}
                 onClick={() => setSelectedSize(s)}
-                style={{ padding: "0.35rem 0.65rem", borderRadius: "6px", border: selectedSize === s ? "1.5px solid var(--primary)" : "1.5px solid rgba(255,255,255,0.15)", background: selectedSize === s ? "rgba(230,34,140,0.15)" : "transparent", color: selectedSize === s ? "#fff" : "rgba(255,255,255,0.55)", fontSize: "0.75rem", cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s", letterSpacing: "0.04em" }}
+                style={{
+                  padding: "0.3rem 0.55rem", borderRadius: "6px",
+                  border: selectedSize === s ? "1.5px solid var(--primary)" : "1.5px solid rgba(255,255,255,0.12)",
+                  background: selectedSize === s ? "rgba(230,34,140,0.15)" : "transparent",
+                  color: selectedSize === s ? "#fff" : "rgba(255,255,255,0.5)",
+                  fontSize: "0.72rem", cursor: "pointer", fontFamily: "inherit",
+                  transition: "all 0.15s", letterSpacing: "0.03em",
+                }}
               >
                 {s}
               </button>
@@ -280,45 +255,20 @@ function TShirtCard({ product }: { product: Product | null }) {
           </div>
         </div>
 
-        {chartOpen && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.75rem" }}>
-              <thead>
-                <tr>
-                  {["Größe", "Körperlänge", "Brustumfang (½)"].map((h) => (
-                    <th key={h} style={{ padding: "0.4rem 0.5rem", textAlign: "left", color: "var(--primary)", letterSpacing: "0.06em", fontSize: "0.65rem", textTransform: "uppercase", borderBottom: "1px solid rgba(230,34,140,0.2)" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {SIZE_CHART.map((row, i) => (
-                  <tr key={row.size} style={{ background: i % 2 === 0 ? "rgba(255,255,255,0.03)" : "transparent" }}>
-                    <td style={{ padding: "0.35rem 0.5rem", color: selectedSize === row.size ? "var(--primary)" : "rgba(255,255,255,0.8)", fontWeight: selectedSize === row.size ? 700 : 400 }}>{row.size}</td>
-                    <td style={{ padding: "0.35rem 0.5rem", color: "rgba(255,255,255,0.55)" }}>{row.length}</td>
-                    <td style={{ padding: "0.35rem 0.5rem", color: "rgba(255,255,255,0.55)" }}>{row.chest}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </motion.div>
-        )}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <ShopNotifyForm />
+        </div>
 
-        {CHECKOUT_ENABLED && product
-          ? <BuyButton selectedSize={selectedSize} selectedColor={selectedColor} product={product} />
-          : <ShopNotifyForm />
-        }
+        <Link
+          href={`/merch/${product.id}`}
+          style={{ fontSize: "0.72rem", color: "var(--primary)", textDecoration: "none", letterSpacing: "0.06em", alignSelf: "flex-start" }}
+        >
+          Produktdetails & Größentabelle →
+        </Link>
       </div>
     </div>
   );
 }
-
-const CATEGORY_LABELS: Record<string, string> = {
-  shirt: "T-Shirt",
-  hoodie: "Hoodie",
-  mug: "Tasse",
-  cap: "Cap",
-  other: "Merch",
-};
 
 function ProductCard({ product }: { product: Product }) {
   const categoryLabel = CATEGORY_LABELS[product.category] ?? "Merch";
@@ -326,31 +276,33 @@ function ProductCard({ product }: { product: Product }) {
 
   return (
     <div style={{ background: "var(--surface)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "12px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <div style={{ position: "relative", aspectRatio: "1/1", background: "#1a1a1a" }}>
-        <Image
-          src={imgSrc}
-          alt={product.title}
-          fill
-          style={{ objectFit: "contain", padding: "1.5rem" }}
-          sizes="(max-width: 768px) 50vw, 300px"
-        />
-      </div>
-      <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "0.75rem", flex: 1 }}>
+      <Link href={`/merch/${product.id}`} style={{ display: "block", textDecoration: "none" }}>
+        <div style={{ position: "relative", aspectRatio: "1/1", background: "#1a1a1a" }}>
+          <Image
+            src={imgSrc}
+            alt={product.title}
+            fill
+            style={{ objectFit: "contain", padding: "1.5rem" }}
+            sizes="(max-width: 768px) 50vw, 300px"
+          />
+        </div>
+      </Link>
+      <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "0.75rem", flex: 1 }}>
         <div>
           <p style={{ fontSize: "0.6rem", letterSpacing: "0.18em", color: "var(--primary)", textTransform: "uppercase", marginBottom: "0.3rem" }}>{categoryLabel}</p>
-          <h3 style={{ fontSize: "1rem", color: "#fff", fontWeight: 600, lineHeight: 1.3, marginBottom: "0.4rem" }}>{product.title}</h3>
+          <h3 style={{ fontSize: "0.95rem", color: "#fff", fontWeight: 600, lineHeight: 1.3, marginBottom: "0.35rem" }}>{product.title}</h3>
           {product.description && (
-            <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.4)", lineHeight: 1.5 }}>{product.description}</p>
+            <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.38)", lineHeight: 1.5 }}>{product.description}</p>
           )}
         </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <p style={{ fontSize: "1.25rem", fontWeight: 700, color: "#FFB347" }}>{formatPrice(product.price_cents)}</p>
-            <p style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.3)", marginTop: "0.2rem" }}>inkl. MwSt. · zzgl. Versand</p>
+            <p style={{ fontSize: "1.2rem", fontWeight: 700, color: "#FFB347" }}>{formatPrice(product.price_cents)}</p>
+            <p style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.28)", marginTop: "0.15rem" }}>inkl. MwSt. · zzgl. Versand</p>
           </div>
           <Link
             href={`/merch/${product.id}`}
-            style={{ fontSize: "0.7rem", color: "var(--primary)", letterSpacing: "0.08em", textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0 }}
+            style={{ fontSize: "0.7rem", color: "var(--primary)", letterSpacing: "0.08em", textDecoration: "none", whiteSpace: "nowrap" }}
           >
             Details →
           </Link>
@@ -365,12 +317,16 @@ export default function Merch({ products = [] }: { products?: Product[] }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
-  const heroShirt = products.find((p) => p.category === "shirt") ?? null;
-  const otherProducts = products.filter((p) => p !== heroShirt);
+  const menShirt   = products.find((p) => p.category === "shirt" && (p.title.toLowerCase().includes("herren") || (p.image_url?.includes("men") && !p.image_url.includes("women"))));
+  const womenShirt = products.find((p) => p.category === "shirt" && (p.title.toLowerCase().includes("damen") || p.image_url?.includes("women")));
+  const featuredShirts = [menShirt, womenShirt].filter(Boolean) as Product[];
+  const mugs = products.filter((p) => p.category === "mug");
 
   return (
     <section id="merch" aria-label="Merch & Shop" style={{ background: "var(--background)", padding: "6rem 1.5rem" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+
+        {/* Header */}
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 28 }}
@@ -387,42 +343,80 @@ export default function Merch({ products = [] }: { products?: Product[] }) {
                 TRAG DEN STYLE
               </h2>
             </div>
-            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", maxWidth: "340px", lineHeight: 1.65 }}>
+            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", maxWidth: "320px", lineHeight: 1.65 }}>
               Offizieller GLADDY Party Crew Merch. Shop öffnet bald — jetzt vormerken.
             </p>
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 32 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, delay: 0.15 }}
-        >
-          <TShirtCard product={heroShirt} />
-        </motion.div>
-
-        {otherProducts.length > 0 && (
+        {/* Featured shirts: Herren + Damen */}
+        {featuredShirts.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 32 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "1.5rem", marginTop: "1.5rem" }}
+            transition={{ duration: 0.7, delay: 0.15 }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 480px), 1fr))",
+              gap: "1.5rem",
+              marginBottom: "1.5rem",
+            }}
           >
-            {otherProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {featuredShirts.map((product) => (
+              <FeaturedShirtCard key={product.id} product={product} />
             ))}
           </motion.div>
         )}
 
-        {!CHECKOUT_ENABLED && (
+        {/* Mugs grid */}
+        {mugs.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.7, delay: otherProducts.length > 0 ? 0.45 : 0.3 }}
-            style={{ marginTop: "1.5rem", background: "rgba(230,34,140,0.06)", border: "1px solid rgba(230,34,140,0.2)", borderRadius: "12px", padding: "2rem 1.75rem", display: "flex", flexDirection: "column", gap: "1rem" }}
+            transition={{ duration: 0.7, delay: 0.3 }}
           >
-            <p style={{ fontFamily: "var(--font-anton)", fontSize: "1.3rem", color: "#fff", letterSpacing: "0.06em" }}>SHOP-LAUNCH-ALARM</p>
-            <ShopNotifyForm />
+            {featuredShirts.length > 0 && (
+              <p style={{ fontSize: "0.6rem", letterSpacing: "0.18em", color: "rgba(255,255,255,0.3)", textTransform: "uppercase", marginBottom: "1rem" }}>
+                Zubehör
+              </p>
+            )}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "1.25rem" }}>
+              {mugs.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Fallback when no products loaded */}
+        {products.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.15 }}
+            style={{ textAlign: "center", padding: "4rem 0" }}
+          >
+            <p style={{ color: "rgba(255,255,255,0.25)", fontSize: "0.85rem" }}>Produkte werden geladen …</p>
+          </motion.div>
+        )}
+
+        {/* Shop launch alarm */}
+        {!CHECKOUT_ENABLED && products.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.45 }}
+            style={{ marginTop: "2rem", background: "rgba(230,34,140,0.06)", border: "1px solid rgba(230,34,140,0.18)", borderRadius: "12px", padding: "1.75rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1.5rem", flexWrap: "wrap" }}
+          >
+            <div>
+              <p style={{ fontFamily: "var(--font-anton)", fontSize: "1.1rem", color: "#fff", letterSpacing: "0.06em", marginBottom: "0.25rem" }}>
+                SHOP-LAUNCH-ALARM
+              </p>
+              <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.4)" }}>Trag dich ein — du erfährst als Erstes, wenn der Shop öffnet.</p>
+            </div>
+            <div style={{ minWidth: "280px", flex: 1, maxWidth: "420px" }}>
+              <ShopNotifyForm />
+            </div>
           </motion.div>
         )}
       </div>
