@@ -334,7 +334,7 @@ export default function Merch({ products = [] }: { products?: Product[] }) {
           transition={{ duration: 0.7 }}
           style={{ marginBottom: "3rem" }}
         >
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "1.5rem" }}>
             <div>
               <p style={{ fontSize: "0.65rem", letterSpacing: "0.22em", color: "var(--primary)", textTransform: "uppercase", fontWeight: 500, marginBottom: "0.75rem" }}>
                 Merch & Shop
@@ -343,9 +343,25 @@ export default function Merch({ products = [] }: { products?: Product[] }) {
                 TRAG DEN STYLE
               </h2>
             </div>
-            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", maxWidth: "320px", lineHeight: 1.65 }}>
-              Offizieller GLADDY Party Crew Merch. Shop öffnet bald — jetzt vormerken.
-            </p>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.75rem" }}>
+              <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.875rem", maxWidth: "300px", lineHeight: 1.65, textAlign: "right" }}>
+                Offizieller GLADDY Party Crew Merch. Shop öffnet bald — jetzt vormerken.
+              </p>
+              <Link
+                href="/shop"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: "0.5rem",
+                  background: "linear-gradient(135deg, #FF3D9A, #B01570)",
+                  color: "#fff", textDecoration: "none",
+                  padding: "0.7rem 1.5rem", borderRadius: "100px",
+                  fontSize: "0.8rem", fontWeight: 600, letterSpacing: "0.08em",
+                  boxShadow: "0 4px 20px rgba(230,34,140,0.35)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Alle Produkte →
+              </Link>
+            </div>
           </div>
         </motion.div>
 
