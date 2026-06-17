@@ -2,6 +2,7 @@
 
 import { useRef, useState, useActionState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { subscribeToShopWaitlist } from "@/app/actions/shop-waitlist";
 
@@ -342,9 +343,17 @@ function ProductCard({ product }: { product: Product }) {
             <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.4)", lineHeight: 1.5 }}>{product.description}</p>
           )}
         </div>
-        <div>
-          <p style={{ fontSize: "1.25rem", fontWeight: 700, color: "#FFB347" }}>{formatPrice(product.price_cents)}</p>
-          <p style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.3)", marginTop: "0.2rem" }}>inkl. MwSt. · zzgl. Versand</p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem" }}>
+          <div>
+            <p style={{ fontSize: "1.25rem", fontWeight: 700, color: "#FFB347" }}>{formatPrice(product.price_cents)}</p>
+            <p style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.3)", marginTop: "0.2rem" }}>inkl. MwSt. · zzgl. Versand</p>
+          </div>
+          <Link
+            href={`/merch/${product.id}`}
+            style={{ fontSize: "0.7rem", color: "var(--primary)", letterSpacing: "0.08em", textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0 }}
+          >
+            Details →
+          </Link>
         </div>
         <ShopNotifyForm />
       </div>

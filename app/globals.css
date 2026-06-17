@@ -367,3 +367,13 @@ body {
     min-width: 540px;
   }
 }
+
+/* ── Individual product page ───────────────────────────────── */
+.product-page-grid {
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 767px) {
+  .product-page-grid {
+    grid-template-columns: 1fr;
+  }
+}

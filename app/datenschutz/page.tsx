@@ -17,7 +17,7 @@ export default function DatenschutzPage() {
       <h2>1. Verantwortlicher</h2>
       <p>
         <strong>Schwietz Holding UG (haftungsbeschränkt)</strong><br />
-        <span className="placeholder">[Straße Hausnummer, PLZ Ort]</span><br />
+        Grambkermoorer Landstraße 22G, 28719 Bremen<br />
         E-Mail: <a href="mailto:info@gladdy-offiziell.de">info@gladdy-offiziell.de</a>
       </p>
 
