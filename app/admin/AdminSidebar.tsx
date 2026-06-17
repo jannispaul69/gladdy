@@ -12,6 +12,7 @@ import {
   ShoppingBag,
   ShoppingCart,
   FolderOpen,
+  Bell,
   LogOut,
   Menu,
   X,
@@ -25,6 +26,7 @@ const NAV = [
   { href: "/admin/songs", icon: Music, label: "Songs" },
   { href: "/admin/products", icon: ShoppingBag, label: "Produkte" },
   { href: "/admin/orders", icon: ShoppingCart, label: "Bestellungen" },
+  { href: "/admin/waitlist",  icon: Bell,       label: "Warteliste" },
   { href: "/admin/pressekit", icon: FolderOpen, label: "Pressematerial" },
 ];
 

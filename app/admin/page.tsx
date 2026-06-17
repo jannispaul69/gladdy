@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Calendar, Music, ShoppingBag, ShoppingCart, TrendingUp, Bell } from "lucide-react";
+import { FileText, Calendar, Music, ShoppingBag, ShoppingCart, TrendingUp, Bell, DollarSign, Package } from "lucide-react";
 
 async function getStats() {
   try {
@@ -7,7 +7,7 @@ async function getStats() {
     const supabase = getSupabaseAdmin();
     const today = new Date().toISOString().split("T")[0];
 
-    const [newBookings, upcomingEvents, activeProducts, songCount, recentBookings, waitlist, recentWaitlist] =
+    const [newBookings, upcomingEvents, activeProducts, songCount, recentBookings, waitlist, recentWaitlist, pendingOrders, paidOrders] =
       await Promise.all([
         supabase.from("bookings").select("id", { count: "exact", head: true }).eq("status", "neu"),
         supabase.from("events").select("id", { count: "exact", head: true }).gte("date", today),
@@ -24,8 +24,11 @@ async function getStats() {
           .select("id, email, created_at")
           .order("created_at", { ascending: false })
           .limit(8),
+        supabase.from("orders").select("id", { count: "exact", head: true }).in("status", ["pending"]),
+        supabase.from("orders").select("total_cents").in("status", ["paid", "shipped", "delivered"]),
       ]);
 
+    const revenue = (paidOrders.data ?? []).reduce((s: number, o: {total_cents: number}) => s + o.total_cents, 0);
     return {
       newBookingCount: newBookings.count ?? 0,
       upcomingEventCount: upcomingEvents.count ?? 0,
@@ -34,6 +37,8 @@ async function getStats() {
       recentBookings: recentBookings.data ?? [],
       waitlistCount: waitlist.count ?? 0,
       recentWaitlist: recentWaitlist.data ?? [],
+      pendingOrderCount: pendingOrders.count ?? 0,
+      revenueCents: revenue,
     };
   } catch {
     return {
@@ -44,6 +49,8 @@ async function getStats() {
       recentBookings: [],
       waitlistCount: 0,
       recentWaitlist: [],
+      pendingOrderCount: 0,
+      revenueCents: 0,
     };
   }
 }
@@ -89,12 +96,14 @@ function StatusBadge({ status }: { status: string }) {
 export default async function AdminDashboard() {
   const stats = await getStats();
 
+  const fmtRevenue = (cents: number) => cents >= 100 ? `${(cents/100).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")} €` : "0 €";
   const statCards = [
-    { label: "Neue Anfragen", value: stats.newBookingCount, icon: FileText, href: "/admin/bookings?status=neu", color: "#60a5fa" },
+    { label: "Neue Anfragen", value: stats.newBookingCount, icon: FileText, href: "/admin/bookings", color: "#60a5fa" },
     { label: "Kommende Termine", value: stats.upcomingEventCount, icon: Calendar, href: "/admin/events", color: "#4ade80" },
     { label: "Aktive Produkte", value: stats.activeProductCount, icon: ShoppingBag, href: "/admin/products", color: "#f59e0b" },
-    { label: "Songs", value: stats.songCount, icon: Music, href: "/admin/songs", color: "var(--primary)" },
-    { label: "Shop-Warteliste", value: stats.waitlistCount, icon: Bell, href: "#waitlist", color: "#a78bfa" },
+    { label: "Offene Bestellungen", value: stats.pendingOrderCount, icon: Package, href: "/admin/orders", color: "#f87171" },
+    { label: "Umsatz (bezahlt)", value: fmtRevenue(stats.revenueCents), icon: DollarSign, href: "/admin/orders", color: "#4ade80" },
+    { label: "Shop-Warteliste", value: stats.waitlistCount, icon: Bell, href: "/admin/waitlist", color: "#a78bfa" },
   ];
 
   return (
@@ -163,7 +172,7 @@ export default async function AdminDashboard() {
             <div
               style={{
                 fontFamily: "var(--font-anton)",
-                fontSize: "2.25rem",
+                fontSize: typeof value === "string" ? "1.4rem" : "2.25rem",
                 color: "#fff",
                 letterSpacing: "0.04em",
                 lineHeight: 1,
