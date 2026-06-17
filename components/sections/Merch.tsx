@@ -5,6 +5,17 @@ import Image from "next/image";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { subscribeToShopWaitlist } from "@/app/actions/shop-waitlist";
 
+export type Product = {
+  id: string;
+  title: string;
+  description: string | null;
+  price_cents: number;
+  category: string;
+  image_url: string | null;
+  status: string;
+  stock_quantity: number;
+};
+
 const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"] as const;
 type Size = (typeof SIZES)[number];
 
@@ -15,23 +26,26 @@ const COLORS = [
 type ColorId = (typeof COLORS)[number]["id"];
 
 const SIZE_CHART: { size: string; length: string; chest: string }[] = [
-  { size: "XS", length: "70 cm", chest: "47 cm" },
-  { size: "S",  length: "72 cm", chest: "50 cm" },
-  { size: "M",  length: "74 cm", chest: "53 cm" },
-  { size: "L",  length: "76 cm", chest: "56 cm" },
-  { size: "XL", length: "78 cm", chest: "60 cm" },
-  { size: "2XL",length: "80 cm", chest: "64 cm" },
-  { size: "3XL",length: "82 cm", chest: "68 cm" },
-  { size: "4XL",length: "84 cm", chest: "72 cm" },
+  { size: "XS",  length: "70 cm", chest: "47 cm" },
+  { size: "S",   length: "72 cm", chest: "50 cm" },
+  { size: "M",   length: "74 cm", chest: "53 cm" },
+  { size: "L",   length: "76 cm", chest: "56 cm" },
+  { size: "XL",  length: "78 cm", chest: "60 cm" },
+  { size: "2XL", length: "80 cm", chest: "64 cm" },
+  { size: "3XL", length: "82 cm", chest: "68 cm" },
+  { size: "4XL", length: "84 cm", chest: "72 cm" },
 ];
 
-const PRODUCT_IMAGES: Record<ColorId, { front: string; back: string }> = {
+const SHIRT_IMAGES: Record<ColorId, { front: string; back: string }> = {
   black: { front: "/merch-shirt-black-front.png", back: "/merch-shirt-black-back.png" },
   white: { front: "/merch-shirt-white-front.png", back: "/merch-shirt-white-back.png" },
 };
 
 const CHECKOUT_ENABLED = process.env.NEXT_PUBLIC_CHECKOUT_ENABLED === "true";
-const PRODUCT_PRICE_CENTS = 2490;
+
+function formatPrice(cents: number) {
+  return `€ ${(cents / 100).toFixed(2).replace(".", ",")}`;
+}
 
 function ShopNotifyForm() {
   const [result, action, pending] = useActionState(subscribeToShopWaitlist, null);
@@ -97,7 +111,7 @@ function ShopNotifyForm() {
   );
 }
 
-function BuyButton({ selectedSize, selectedColor }: { selectedSize: Size | null; selectedColor: ColorId }) {
+function BuyButton({ selectedSize, selectedColor, product }: { selectedSize: Size | null; selectedColor: ColorId; product: Product }) {
   const [state, setState] = useState<"idle" | "loading" | "error">("idle");
 
   async function handleBuy() {
@@ -111,14 +125,12 @@ function BuyButton({ selectedSize, selectedColor }: { selectedSize: Size | null;
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: [
-            {
-              name: "GLADDY Party Crew T-Shirt",
-              description: `Größe: ${selectedSize} · Farbe: ${selectedColor === "black" ? "Schwarz" : "Weiß"}`,
-              price_cents: PRODUCT_PRICE_CENTS,
-              quantity: 1,
-            },
-          ],
+          items: [{
+            name: product.title,
+            description: `Größe: ${selectedSize} · Farbe: ${selectedColor === "black" ? "Schwarz" : "Weiß"}`,
+            price_cents: product.price_cents,
+            quantity: 1,
+          }],
         }),
       });
       const data = await res.json() as { url?: string; error?: string };
@@ -157,24 +169,22 @@ function BuyButton({ selectedSize, selectedColor }: { selectedSize: Size | null;
   );
 }
 
-function TShirtCard() {
+function TShirtCard({ product }: { product: Product | null }) {
   const [selectedColor, setSelectedColor] = useState<ColorId>("black");
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
   const [chartOpen, setChartOpen] = useState(false);
   const [side, setSide] = useState<"front" | "back">("front");
 
   const colorObj = COLORS.find((c) => c.id === selectedColor)!;
-  const imageSrc = PRODUCT_IMAGES[selectedColor][side];
+  const imageSrc = SHIRT_IMAGES[selectedColor][side];
+  const priceCents = product?.price_cents ?? 2490;
 
   return (
     <div
       style={{ background: "var(--surface)", border: "1px solid rgba(230,34,140,0.2)", borderRadius: "12px", overflow: "hidden", display: "grid", gap: 0 }}
       className="merch-product-grid"
     >
-      {/* Product image with front/back toggle */}
-      <div
-        style={{ background: selectedColor === "black" ? "#111" : "#e8e8e8", position: "relative", aspectRatio: "1/1", minHeight: "320px", transition: "background 0.4s", overflow: "hidden" }}
-      >
+      <div style={{ background: selectedColor === "black" ? "#111" : "#e8e8e8", position: "relative", aspectRatio: "1/1", minHeight: "320px", transition: "background 0.4s", overflow: "hidden" }}>
         <AnimatePresence mode="wait">
           <motion.div
             key={imageSrc}
@@ -195,7 +205,6 @@ function TShirtCard() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Front / Back toggle */}
         <div style={{ position: "absolute", bottom: "1rem", left: "50%", transform: "translateX(-50%)", display: "flex", gap: "0.35rem", zIndex: 1 }}>
           {(["front", "back"] as const).map((s) => (
             <button
@@ -222,16 +231,16 @@ function TShirtCard() {
         </div>
       </div>
 
-      {/* Product info */}
       <div style={{ padding: "2rem 1.75rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
         <div>
           <p style={{ fontSize: "0.6rem", letterSpacing: "0.18em", color: "var(--primary)", textTransform: "uppercase", marginBottom: "0.4rem" }}>Unisex T-Shirt</p>
-          <h3 style={{ fontFamily: "var(--font-anton)", fontSize: "1.5rem", color: "#fff", letterSpacing: "0.05em", lineHeight: 1.1, marginBottom: "0.5rem" }}>GLADDY<br />PARTY CREW</h3>
-          <p style={{ fontSize: "1.5rem", fontWeight: 700, color: "#FFB347", letterSpacing: "-0.01em" }}>€ 24,90</p>
+          <h3 style={{ fontFamily: "var(--font-anton)", fontSize: "1.5rem", color: "#fff", letterSpacing: "0.05em", lineHeight: 1.1, marginBottom: "0.5rem" }}>
+            GLADDY<br />PARTY CREW
+          </h3>
+          <p style={{ fontSize: "1.5rem", fontWeight: 700, color: "#FFB347", letterSpacing: "-0.01em" }}>{formatPrice(priceCents)}</p>
           <p style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", marginTop: "0.25rem" }}>inkl. MwSt. · zzgl. Versand</p>
         </div>
 
-        {/* Color selector */}
         <div>
           <p style={{ fontSize: "0.68rem", letterSpacing: "0.1em", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", marginBottom: "0.6rem" }}>
             Farbe: <span style={{ color: "#fff" }}>{colorObj.label}</span>
@@ -248,7 +257,6 @@ function TShirtCard() {
           </div>
         </div>
 
-        {/* Size selector */}
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
             <p style={{ fontSize: "0.68rem", letterSpacing: "0.1em", color: "rgba(255,255,255,0.5)", textTransform: "uppercase" }}>
@@ -271,7 +279,6 @@ function TShirtCard() {
           </div>
         </div>
 
-        {/* Size chart */}
         {chartOpen && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.75rem" }}>
@@ -295,9 +302,8 @@ function TShirtCard() {
           </motion.div>
         )}
 
-        {/* CTA */}
-        {CHECKOUT_ENABLED
-          ? <BuyButton selectedSize={selectedSize} selectedColor={selectedColor} />
+        {CHECKOUT_ENABLED && product
+          ? <BuyButton selectedSize={selectedSize} selectedColor={selectedColor} product={product} />
           : <ShopNotifyForm />
         }
       </div>
@@ -305,35 +311,57 @@ function TShirtCard() {
   );
 }
 
-function HoodieTeaser() {
+const CATEGORY_LABELS: Record<string, string> = {
+  shirt: "T-Shirt",
+  hoodie: "Hoodie",
+  mug: "Tasse",
+  cap: "Cap",
+  other: "Merch",
+};
+
+function ProductCard({ product }: { product: Product }) {
+  const categoryLabel = CATEGORY_LABELS[product.category] ?? "Merch";
+  const imgSrc = product.image_url ?? "/gladdy-logo.png";
+
   return (
-    <div style={{ background: "var(--surface)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "12px", padding: "2rem 1.75rem", display: "flex", flexDirection: "column", gap: "1rem", position: "relative", overflow: "hidden" }}>
-      {/* Coming soon overlay */}
-      <div style={{ position: "absolute", inset: 0, background: "rgba(10,10,10,0.6)", backdropFilter: "blur(2px)", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "0.75rem" }}>
-        <span style={{ fontFamily: "var(--font-anton)", fontSize: "1.25rem", color: "#fff", letterSpacing: "0.15em" }}>COMING SOON</span>
-        <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.45)", letterSpacing: "0.08em" }}>Hoodie · Unisex · Schwarz & Weiß</span>
+    <div style={{ background: "var(--surface)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "12px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <div style={{ position: "relative", aspectRatio: "1/1", background: "#1a1a1a" }}>
+        <Image
+          src={imgSrc}
+          alt={product.title}
+          fill
+          style={{ objectFit: "contain", padding: "1.5rem" }}
+          sizes="(max-width: 768px) 50vw, 300px"
+        />
       </div>
-      {/* Blurred content behind overlay */}
-      <p style={{ fontSize: "0.6rem", letterSpacing: "0.18em", color: "var(--primary)", textTransform: "uppercase" }}>Unisex Hoodie</p>
-      <h3 style={{ fontFamily: "var(--font-anton)", fontSize: "1.5rem", color: "#fff", letterSpacing: "0.05em" }}>GLADDY<br />PARTY CREW</h3>
-      <div style={{ display: "flex", gap: "0.6rem" }}>
-        {COLORS.map((c) => (
-          <div key={c.id} style={{ width: "28px", height: "28px", borderRadius: "50%", background: c.hex, border: `1.5px solid ${c.border}` }} />
-        ))}
+      <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "0.75rem", flex: 1 }}>
+        <div>
+          <p style={{ fontSize: "0.6rem", letterSpacing: "0.18em", color: "var(--primary)", textTransform: "uppercase", marginBottom: "0.3rem" }}>{categoryLabel}</p>
+          <h3 style={{ fontSize: "1rem", color: "#fff", fontWeight: 600, lineHeight: 1.3, marginBottom: "0.4rem" }}>{product.title}</h3>
+          {product.description && (
+            <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.4)", lineHeight: 1.5 }}>{product.description}</p>
+          )}
+        </div>
+        <div>
+          <p style={{ fontSize: "1.25rem", fontWeight: 700, color: "#FFB347" }}>{formatPrice(product.price_cents)}</p>
+          <p style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.3)", marginTop: "0.2rem" }}>inkl. MwSt. · zzgl. Versand</p>
+        </div>
+        <ShopNotifyForm />
       </div>
-      <p style={{ fontSize: "1.25rem", fontWeight: 700, color: "#FFB347" }}>Preis folgt</p>
     </div>
   );
 }
 
-export default function Merch() {
+export default function Merch({ products = [] }: { products?: Product[] }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+
+  const heroShirt = products.find((p) => p.category === "shirt") ?? null;
+  const otherProducts = products.filter((p) => p !== heroShirt);
 
   return (
     <section id="merch" aria-label="Merch & Shop" style={{ background: "var(--background)", padding: "6rem 1.5rem" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-        {/* Header */}
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 28 }}
@@ -351,36 +379,43 @@ export default function Merch() {
               </h2>
             </div>
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", maxWidth: "340px", lineHeight: 1.65 }}>
-              Offizieller GLADDY Party Crew Merch. Unisex-Schnitt, alle Größen. Shop öffnet bald — jetzt vorbestellen.
+              Offizieller GLADDY Party Crew Merch. Shop öffnet bald — jetzt vormerken.
             </p>
           </div>
         </motion.div>
 
-        {/* Products */}
         <motion.div
           initial={{ opacity: 0, y: 32 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, delay: 0.15 }}
         >
-          <TShirtCard />
+          <TShirtCard product={heroShirt} />
         </motion.div>
 
-        {/* Hoodie teaser + Newsletter side by side */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          style={{ display: "grid", gap: "1.5rem", marginTop: "1.5rem" }}
-          className="merch-bottom-grid"
-        >
-          <HoodieTeaser />
+        {otherProducts.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.3 }}
+            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "1.5rem", marginTop: "1.5rem" }}
+          >
+            {otherProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </motion.div>
+        )}
 
-          {/* Newsletter */}
-          <div style={{ background: "rgba(230,34,140,0.06)", border: "1px solid rgba(230,34,140,0.2)", borderRadius: "12px", padding: "2rem 1.75rem", display: "flex", flexDirection: "column", justifyContent: "center", gap: "1rem" }}>
+        {!CHECKOUT_ENABLED && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: otherProducts.length > 0 ? 0.45 : 0.3 }}
+            style={{ marginTop: "1.5rem", background: "rgba(230,34,140,0.06)", border: "1px solid rgba(230,34,140,0.2)", borderRadius: "12px", padding: "2rem 1.75rem", display: "flex", flexDirection: "column", gap: "1rem" }}
+          >
             <p style={{ fontFamily: "var(--font-anton)", fontSize: "1.3rem", color: "#fff", letterSpacing: "0.06em" }}>SHOP-LAUNCH-ALARM</p>
             <ShopNotifyForm />
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
       </div>
     </section>
   );

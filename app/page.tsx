@@ -3,7 +3,7 @@ import Hero from "@/components/sections/Hero";
 import About from "@/components/sections/About";
 import Events from "@/components/sections/Events";
 import Songs from "@/components/sections/Songs";
-import Merch from "@/components/sections/Merch";
+import MerchSection from "@/components/sections/MerchSection";
 import BookingBanner from "@/components/sections/BookingBanner";
 import Booking from "@/components/sections/Booking";
 import Pressekit from "@/components/sections/Pressekit";
@@ -21,7 +21,7 @@ export default async function Home() {
         <About />
         <Events events={events} />
         <Songs />
-        <Merch />
+        <MerchSection />
         <BookingBanner />
         <Booking />
       </main>
