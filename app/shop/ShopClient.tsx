@@ -63,8 +63,8 @@ function ShopCard({ product, index }: { product: Product; index: number }) {
         <div
           style={{
             position: "relative",
-            aspectRatio: isShirt ? "4/3" : "1/1",
-            background: isShirt ? "#111" : "#1a1a1a",
+            aspectRatio: "4/3",
+            background: isShirt ? "#111" : "#181818",
             overflow: "hidden",
           }}
         >
@@ -75,7 +75,7 @@ function ShopCard({ product, index }: { product: Product; index: number }) {
             style={{
               objectFit: isShirt ? "cover" : "contain",
               objectPosition: "center",
-              padding: isShirt ? "0" : "1.5rem",
+              padding: isShirt ? "0" : "2rem",
             }}
             sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
           />
