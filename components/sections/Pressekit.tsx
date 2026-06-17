@@ -1,15 +1,13 @@
 import { Download, Image as ImageIcon, FileText, User, Package } from "lucide-react";
 
-const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
-const BUCKET_BASE = `${SUPABASE_URL}/storage/v1/object/public/gladdy-uploads`;
-
 const PRESS_FILES = [
   {
     id: "pressefotos",
     label: "Pressefotos",
     description: "Hochauflösende Fotos für Print und Online",
     icon: ImageIcon,
-    storagePath: "pressekit/pressefotos.zip",
+    href: "/presskit/pressefotos.zip",
+    filename: "GLADDY_Pressefotos.zip",
     format: "ZIP",
   },
   {
@@ -17,7 +15,8 @@ const PRESS_FILES = [
     label: "Technischer Rider",
     description: "Bühnen- und Tontechnik-Anforderungen",
     icon: FileText,
-    storagePath: "pressekit/rider.pdf",
+    href: "/presskit/rider.pdf",
+    filename: "GLADDY_Technischer-Rider.pdf",
     format: "PDF",
   },
   {
@@ -25,7 +24,8 @@ const PRESS_FILES = [
     label: "Künstlerbiografie",
     description: "Offizielle Kurzbiografie für Veranstalter",
     icon: User,
-    storagePath: "pressekit/bio.pdf",
+    href: "/presskit/bio.pdf",
+    filename: "GLADDY_Kuenstlerbiografie.pdf",
     format: "PDF",
   },
   {
@@ -33,7 +33,8 @@ const PRESS_FILES = [
     label: "Logo-Pack",
     description: "Logo in verschiedenen Formaten & Farben",
     icon: Package,
-    storagePath: "pressekit/logo-pack.zip",
+    href: "/presskit/logo-pack.zip",
+    filename: "GLADDY_Logo-Pack.zip",
     format: "ZIP",
   },
 ];
@@ -72,14 +73,13 @@ export default function Pressekit() {
           }}
         >
           {PRESS_FILES.map((item) => {
-            const url = `${BUCKET_BASE}/${item.storagePath}`;
             const Icon = item.icon;
 
             return (
               <a
                 key={item.id}
-                href={url}
-                download
+                href={item.href}
+                download={item.filename}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
