@@ -72,11 +72,7 @@ function ShopCard({ product, index }: { product: Product; index: number }) {
             src={imgSrc}
             alt={product.title}
             fill
-            style={{
-              objectFit: isShirt ? "cover" : "contain",
-              objectPosition: "center",
-              padding: isShirt ? "0" : "2rem",
-            }}
+            style={{ objectFit: "cover", objectPosition: "center top" }}
             sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
           />
           <div className="shop-card-overlay" style={{
