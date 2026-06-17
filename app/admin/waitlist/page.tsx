@@ -1,3 +1,4 @@
+import ConfirmDelete from "./ConfirmDelete";
 import { Bell, Download } from "lucide-react";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
@@ -94,12 +95,7 @@ export default async function WaitlistPage() {
                     </td>
                     <td style={{ padding: "0.75rem 1rem", fontSize: "0.78rem", color: "rgba(255,255,255,0.4)", whiteSpace: "nowrap" }}>{fmt(entry.created_at)}</td>
                     <td style={{ padding: "0.75rem 1rem" }}>
-                      <form action={deleteEntry} style={{ display: "inline" }}>
-                        <input type="hidden" name="id" value={entry.id} />
-                        <button type="submit" style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.2)", fontSize: "0.75rem", fontFamily: "inherit" }}
-                          onClick={e => { if (!confirm("Eintrag löschen?")) e.preventDefault(); }}
-                          className="hover-pink">Entfernen</button>
-                      </form>
+                      <ConfirmDelete action={deleteEntry} id={entry.id} />
                     </td>
                   </tr>
                 ))}

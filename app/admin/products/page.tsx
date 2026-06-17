@@ -5,6 +5,7 @@ import DeleteButton from "@/app/admin/DeleteButton";
 import UploadField from "@/app/admin/UploadField";
 import ImageGalleryField from "./ImageGalleryField";
 import SizeStockField from "./SizeStockField";
+import StatusSelect from "./StatusSelect";
 
 const CATEGORIES = [
   { value: "shirt",  label: "Shirt" },
@@ -298,14 +299,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                       {product.delivery_days_min}–{product.delivery_days_max} Tage
                     </td>
                     <td style={{ padding: "0.75rem 1rem" }}>
-                      <form action={quickStatusUpdate} style={{ display: "inline" }}>
-                        <input type="hidden" name="id" value={product.id} />
-                        <select name="status" onChange={e => { const f = e.target.form; if (f) { const fd = new FormData(f); fd.set("status", e.target.value); quickStatusUpdate(fd); } }}
-                          defaultValue={product.status}
-                          style={{ background: `${status?.color ?? "#888"}22`, color: status?.color ?? "#888", border: `1px solid ${status?.color ?? "#888"}44`, borderRadius: "100px", padding: "0.2rem 0.6rem", fontSize: "0.65rem", letterSpacing: "0.06em", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
-                          {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                        </select>
-                      </form>
+                      <StatusSelect id={product.id} status={product.status} />
                     </td>
                     <td style={{ padding: "0.75rem 1rem", whiteSpace: "nowrap" }}>
                       <Link href={`/merch/${product.id}`} target="_blank"
