@@ -6,9 +6,7 @@ import Songs from "@/components/sections/Songs";
 import MerchSection from "@/components/sections/MerchSection";
 import BookingBanner from "@/components/sections/BookingBanner";
 import Booking from "@/components/sections/Booking";
-import FAQ from "@/components/sections/FAQ";
 import FanCommunity from "@/components/sections/FanCommunity";
-import InstagramFeed from "@/components/sections/InstagramFeed";
 import Pressekit from "@/components/sections/Pressekit";
 import Footer from "@/components/sections/Footer";
 import { getEvents } from "@/lib/events";
@@ -24,11 +22,9 @@ export default async function Home() {
         <About />
         <Events events={events} />
         <Songs />
-        <InstagramFeed />
         <MerchSection />
         <BookingBanner />
         <Booking />
-        <FAQ />
         <FanCommunity />
       </main>
       <Pressekit />
