@@ -24,8 +24,8 @@ export const metadata: Metadata = {
   description:
     "GLADDY – Partyschlager-Künstler für unvergessliche Events, Bühnen und Feiern. Jetzt buchen!",
   icons: {
-    icon: [{ url: "/gladdy-logo.png", type: "image/png" }],
-    apple: [{ url: "/gladdy-logo.png" }],
+    icon: [{ url: "/favicon.png", type: "image/png" }],
+    apple: [{ url: "/favicon.png" }],
   },
   openGraph: {
     title: "GLADDY | Partyschlager & Ballermann",
