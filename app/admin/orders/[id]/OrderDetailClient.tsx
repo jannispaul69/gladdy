@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Truck, Mail, RotateCcw } from "lucide-react";
 
 type OrderStatus = "pending" | "paid" | "shipped" | "delivered" | "refunded" | "cancelled";
 
@@ -19,59 +20,146 @@ interface Props {
   initialStatus: OrderStatus;
   initialTracking: string;
   initialNotes: string;
+  customerEmail: string;
 }
 
-export default function OrderDetailClient({ orderId, initialStatus, initialTracking, initialNotes }: Props) {
+export default function OrderDetailClient({
+  orderId,
+  initialStatus,
+  initialTracking,
+  initialNotes,
+  customerEmail,
+}: Props) {
   const router = useRouter();
-  const [status, setStatus]     = useState<OrderStatus>(initialStatus);
+  const [status,   setStatus]   = useState<OrderStatus>(initialStatus);
   const [tracking, setTracking] = useState(initialTracking);
-  const [notes, setNotes]       = useState(initialNotes);
-  const [saving, setSaving]     = useState(false);
-  const [msg, setMsg]           = useState<{ ok: boolean; text: string } | null>(null);
+  const [notes,    setNotes]    = useState(initialNotes);
+  const [saving,   setSaving]   = useState(false);
+  const [msg,      setMsg]      = useState<{ ok: boolean; text: string } | null>(null);
 
-  async function save(patch: Partial<{ status: OrderStatus; tracking_number: string; notes: string }>) {
+  function showMsg(ok: boolean, text: string) {
+    setMsg({ ok, text });
+    setTimeout(() => setMsg(null), 3500);
+  }
+
+  async function patch(data: Record<string, string>) {
     setSaving(true);
-    setMsg(null);
     try {
       const res = await fetch(`/api/admin/orders/${orderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(patch),
+        body: JSON.stringify(data),
       });
-      const data = await res.json();
-      if (data.ok) {
-        setMsg({ ok: true, text: "Gespeichert." });
-        router.refresh();
-      } else {
-        setMsg({ ok: false, text: data.error ?? "Fehler" });
-      }
+      const json = await res.json();
+      if (json.ok) { router.refresh(); return true; }
+      showMsg(false, json.error ?? "Fehler");
+      return false;
     } catch {
-      setMsg({ ok: false, text: "Verbindungsfehler" });
+      showMsg(false, "Verbindungsfehler");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleShipNow() {
+    if (!tracking.trim()) { showMsg(false, "Bitte zuerst eine Tracking-Nummer eingeben."); return; }
+    const ok = await patch({ status: "shipped", tracking_number: tracking });
+    if (ok) { setStatus("shipped"); showMsg(true, "Als versendet markiert — Kunde wird per E-Mail benachrichtigt."); }
+  }
+
+  async function handleStatusChange(s: OrderStatus) {
+    setStatus(s);
+    const ok = await patch({ status: s });
+    if (ok) showMsg(true, "Status gespeichert.");
+  }
+
+  async function handleResendEmail() {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/email`, { method: "POST" });
+      const json = await res.json();
+      showMsg(json.ok, json.ok ? "Bestellbestätigung wurde erneut gesendet." : (json.error ?? "Fehler"));
+    } catch {
+      showMsg(false, "Verbindungsfehler");
     } finally {
       setSaving(false);
     }
   }
 
   const currentOption = STATUS_OPTIONS.find(s => s.value === status)!;
+  const isReadyToShip = status === "paid";
+
+  const card: React.CSSProperties = {
+    background: "#141414", border: "1px solid rgba(255,255,255,0.07)",
+    borderRadius: "10px", padding: "1.25rem 1.5rem",
+  };
+  const sectionLabel: React.CSSProperties = {
+    fontSize: "0.62rem", letterSpacing: "0.14em", textTransform: "uppercase",
+    color: "rgba(255,255,255,0.3)", marginBottom: "0.85rem", display: "block",
+  };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
 
-      {/* Status */}
-      <div style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", padding: "1.25rem 1.5rem" }}>
-        <p style={{ fontSize: "0.65rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", marginBottom: "0.75rem" }}>Status</p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+      {/* ── Quick-Ship ─────────────────────────────────────────────────────── */}
+      {isReadyToShip && (
+        <div style={{
+          background: "rgba(96,165,250,0.06)", border: "1px solid rgba(96,165,250,0.25)",
+          borderRadius: "10px", padding: "1.25rem 1.5rem",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.85rem" }}>
+            <Truck size={14} style={{ color: "#60a5fa" }} strokeWidth={1.75} />
+            <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#60a5fa", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+              Versand abschließen
+            </span>
+          </div>
+          <input
+            type="text"
+            value={tracking}
+            onChange={e => setTracking(e.target.value)}
+            placeholder="Tracking-Nummer eingeben …"
+            style={{
+              width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(96,165,250,0.3)",
+              borderRadius: "7px", padding: "0.65rem 0.9rem", color: "#fff",
+              fontSize: "0.85rem", outline: "none", fontFamily: "monospace", boxSizing: "border-box",
+              marginBottom: "0.6rem",
+            }}
+          />
+          <button
+            onClick={handleShipNow}
+            disabled={saving}
+            style={{
+              width: "100%", padding: "0.7rem", borderRadius: "7px", fontSize: "0.82rem",
+              fontWeight: 700, cursor: saving ? "wait" : "pointer", fontFamily: "inherit",
+              background: "linear-gradient(135deg,#60a5fa,#3b82f6)",
+              border: "none", color: "#fff", letterSpacing: "0.04em", transition: "opacity 0.15s",
+              opacity: saving ? 0.6 : 1,
+            }}
+          >
+            {saving ? "Wird gespeichert …" : "Jetzt versenden + E-Mail an Kunden"}
+          </button>
+          <p style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.25)", margin: "0.5rem 0 0", lineHeight: 1.5 }}>
+            Setzt Status auf "Versendet" und sendet automatisch eine Versandmail mit dem Tracking-Link.
+          </p>
+        </div>
+      )}
+
+      {/* ── Status ─────────────────────────────────────────────────────────── */}
+      <div style={card}>
+        <span style={sectionLabel}>Status</span>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "0.85rem" }}>
           {STATUS_OPTIONS.map(opt => (
             <button
               key={opt.value}
-              onClick={() => { setStatus(opt.value); save({ status: opt.value }); }}
+              onClick={() => handleStatusChange(opt.value)}
               disabled={saving}
               style={{
-                padding: "0.4rem 0.9rem", borderRadius: "100px", fontSize: "0.72rem",
+                padding: "0.35rem 0.85rem", borderRadius: "100px", fontSize: "0.7rem",
                 fontWeight: 500, letterSpacing: "0.06em", cursor: saving ? "wait" : "pointer",
                 border: status === opt.value ? `1.5px solid ${opt.color}` : "1.5px solid rgba(255,255,255,0.08)",
                 background: status === opt.value ? `${opt.color}18` : "transparent",
-                color: status === opt.value ? opt.color : "rgba(255,255,255,0.35)",
+                color: status === opt.value ? opt.color : "rgba(255,255,255,0.3)",
                 fontFamily: "inherit", transition: "all 0.15s",
               }}
             >
@@ -79,15 +167,17 @@ export default function OrderDetailClient({ orderId, initialStatus, initialTrack
             </button>
           ))}
         </div>
-        <div style={{ marginTop: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: currentOption.color, flexShrink: 0 }} />
-          <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.5)" }}>Aktuell: <strong style={{ color: currentOption.color }}>{currentOption.label}</strong></span>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: currentOption.color, flexShrink: 0 }} />
+          <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.4)" }}>
+            Aktuell: <strong style={{ color: currentOption.color }}>{currentOption.label}</strong>
+          </span>
         </div>
       </div>
 
-      {/* Tracking */}
-      <div style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", padding: "1.25rem 1.5rem" }}>
-        <p style={{ fontSize: "0.65rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", marginBottom: "0.75rem" }}>Tracking-Nummer</p>
+      {/* ── Tracking ───────────────────────────────────────────────────────── */}
+      <div style={card}>
+        <span style={sectionLabel}>Tracking-Nummer</span>
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <input
             type="text"
@@ -96,18 +186,18 @@ export default function OrderDetailClient({ orderId, initialStatus, initialTrack
             placeholder="z. B. 1Z999AA10123456784"
             style={{
               flex: 1, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "8px", padding: "0.65rem 0.9rem", color: "#fff",
-              fontSize: "0.85rem", outline: "none", fontFamily: "monospace",
+              borderRadius: "7px", padding: "0.6rem 0.85rem", color: "#fff",
+              fontSize: "0.82rem", outline: "none", fontFamily: "monospace",
             }}
           />
           <button
-            onClick={() => save({ tracking_number: tracking })}
+            onClick={() => patch({ tracking_number: tracking }).then(ok => ok && showMsg(true, "Tracking gespeichert."))}
             disabled={saving}
             style={{
-              padding: "0.65rem 1.1rem", borderRadius: "8px", fontSize: "0.78rem",
+              padding: "0.6rem 1rem", borderRadius: "7px", fontSize: "0.75rem",
               fontWeight: 600, cursor: saving ? "wait" : "pointer", fontFamily: "inherit",
               background: "rgba(230,34,140,0.15)", border: "1px solid rgba(230,34,140,0.3)",
-              color: "var(--primary)", whiteSpace: "nowrap", transition: "background 0.15s",
+              color: "var(--primary)", transition: "background 0.15s",
             }}
           >
             Speichern
@@ -117,16 +207,52 @@ export default function OrderDetailClient({ orderId, initialStatus, initialTrack
           <a
             href={`https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${tracking}`}
             target="_blank" rel="noopener noreferrer"
-            style={{ display: "inline-block", marginTop: "0.5rem", fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", textDecoration: "none" }}
+            style={{ display: "inline-block", marginTop: "0.5rem", fontSize: "0.68rem", color: "#60a5fa", textDecoration: "none" }}
           >
             DHL-Tracking öffnen →
           </a>
         )}
       </div>
 
-      {/* Notizen */}
-      <div style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", padding: "1.25rem 1.5rem" }}>
-        <p style={{ fontSize: "0.65rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", marginBottom: "0.75rem" }}>Interne Notiz</p>
+      {/* ── E-Mail-Aktionen ─────────────────────────────────────────────────── */}
+      <div style={card}>
+        <span style={sectionLabel}>E-Mail-Aktionen</span>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          <button
+            onClick={handleResendEmail}
+            disabled={saving || !customerEmail}
+            style={{
+              display: "flex", alignItems: "center", gap: "0.5rem",
+              padding: "0.6rem 1rem", borderRadius: "7px", fontSize: "0.78rem",
+              fontWeight: 500, cursor: saving ? "wait" : "pointer", fontFamily: "inherit",
+              background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
+              color: "rgba(255,255,255,0.55)", textAlign: "left", transition: "all 0.15s",
+            }}
+          >
+            <RotateCcw size={13} strokeWidth={1.75} />
+            Bestellbestätigung erneut senden
+          </button>
+          {customerEmail && (
+            <a
+              href={`mailto:${customerEmail}`}
+              style={{
+                display: "flex", alignItems: "center", gap: "0.5rem",
+                padding: "0.6rem 1rem", borderRadius: "7px", fontSize: "0.78rem",
+                fontWeight: 500, fontFamily: "inherit",
+                background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
+                color: "rgba(255,255,255,0.55)", textDecoration: "none", transition: "all 0.15s",
+              }}
+            >
+              <Mail size={13} strokeWidth={1.75} />
+              Direkt anschreiben ({customerEmail})
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* ── Notizen ────────────────────────────────────────────────────────── */}
+      <div style={card}>
+        <span style={sectionLabel}>Interne Notiz</span>
         <textarea
           value={notes}
           onChange={e => setNotes(e.target.value)}
@@ -134,16 +260,15 @@ export default function OrderDetailClient({ orderId, initialStatus, initialTrack
           placeholder="z. B. Kunde hat angerufen, Lieferung verzögert …"
           style={{
             width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: "8px", padding: "0.65rem 0.9rem", color: "#fff",
-            fontSize: "0.82rem", outline: "none", fontFamily: "inherit", resize: "vertical",
-            boxSizing: "border-box",
+            borderRadius: "7px", padding: "0.65rem 0.9rem", color: "#fff",
+            fontSize: "0.82rem", outline: "none", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box",
           }}
         />
         <button
-          onClick={() => save({ notes })}
+          onClick={() => patch({ notes }).then(ok => ok && showMsg(true, "Notiz gespeichert."))}
           disabled={saving}
           style={{
-            marginTop: "0.5rem", padding: "0.5rem 1rem", borderRadius: "8px", fontSize: "0.75rem",
+            marginTop: "0.5rem", padding: "0.5rem 1rem", borderRadius: "7px", fontSize: "0.73rem",
             fontWeight: 600, cursor: saving ? "wait" : "pointer", fontFamily: "inherit",
             background: "rgba(230,34,140,0.12)", border: "1px solid rgba(230,34,140,0.25)",
             color: "var(--primary)", transition: "background 0.15s",
@@ -153,16 +278,17 @@ export default function OrderDetailClient({ orderId, initialStatus, initialTrack
         </button>
       </div>
 
+      {/* ── Feedback msg ───────────────────────────────────────────────────── */}
       {msg && (
-        <p style={{
+        <div style={{
           fontSize: "0.75rem", color: msg.ok ? "#4ade80" : "#f87171",
-          padding: "0.5rem 0.9rem",
+          padding: "0.6rem 1rem",
           background: msg.ok ? "rgba(74,222,128,0.06)" : "rgba(248,113,113,0.06)",
           border: `1px solid ${msg.ok ? "rgba(74,222,128,0.2)" : "rgba(248,113,113,0.2)"}`,
-          borderRadius: "8px",
+          borderRadius: "8px", lineHeight: 1.5,
         }}>
           {msg.ok ? "✓" : "✗"} {msg.text}
-        </p>
+        </div>
       )}
     </div>
   );
