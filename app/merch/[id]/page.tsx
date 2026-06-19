@@ -14,7 +14,7 @@ async function getProduct(id: string): Promise<Product | null> {
       .from("products")
       .select("*")
       .eq("id", id)
-      .neq("status", "archived")
+      .eq("status", "active")
       .single();
     return data ?? null;
   } catch {
