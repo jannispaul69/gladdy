@@ -60,31 +60,67 @@ function MerchCarouselCard({ product }: { product: Product }) {
       }}
     >
       <Link href={`/merch/${product.id}`} style={{ display: "block", textDecoration: "none" }}>
-        <div style={{
-          position: "relative", aspectRatio: "1/1",
-          background: isShirt ? "#111" : "#181818",
-          overflow: "hidden",
-        }}>
-          <Image
-            src={imgSrc}
-            alt={product.title}
-            fill
-            style={{ objectFit: "cover", objectPosition: "center top" }}
-            sizes="260px"
-          />
-          <div className="merch-card-hover" style={{
-            position: "absolute", inset: 0,
-            background: "rgba(230,34,140,0.08)",
-            opacity: 0, transition: "opacity 0.2s",
-            display: "flex", alignItems: "center", justifyContent: "center",
+        {/* wrapper gives us a stacking context for the variant thumbnail */}
+        <div style={{ position: "relative" }}>
+          <div style={{
+            position: "relative", aspectRatio: "1/1",
+            background: isShirt ? "#111" : "#181818",
+            overflow: "hidden",
           }}>
-            <span style={{
-              background: "rgba(230,34,140,0.9)", color: "#fff",
-              fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.1em",
-              padding: "0.45rem 1rem", borderRadius: "100px",
-              textTransform: "uppercase",
-            }}>Details →</span>
+            <Image
+              src={imgSrc}
+              alt={product.title}
+              fill
+              style={{ objectFit: "cover", objectPosition: "center top" }}
+              sizes="260px"
+            />
+            <div className="merch-card-hover" style={{
+              position: "absolute", inset: 0,
+              background: "rgba(230,34,140,0.08)",
+              opacity: 0, transition: "opacity 0.2s",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <span style={{
+                background: "rgba(230,34,140,0.9)", color: "#fff",
+                fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.1em",
+                padding: "0.45rem 1rem", borderRadius: "100px",
+                textTransform: "uppercase",
+              }}>Details →</span>
+            </div>
           </div>
+
+          {/* White variant thumbnail in bottom-right corner */}
+          {isShirt && (
+            <div style={{
+              position: "absolute", bottom: "10px", right: "10px",
+              width: "58px", height: "58px",
+              borderRadius: "10px",
+              overflow: "hidden",
+              border: "2px solid rgba(255,255,255,0.55)",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.45)",
+              background: "#f0f0f0",
+              zIndex: 2,
+            }}
+              title="Auch in Weiß erhältlich"
+            >
+              <Image
+                src={`/products/shirt-${product.title.toLowerCase().includes("damen") ? "women" : "men"}-white-front.png`}
+                alt="Auch in Weiß"
+                fill
+                style={{ objectFit: "cover", objectPosition: "center top" }}
+                sizes="58px"
+              />
+              <div style={{
+                position: "absolute", bottom: 0, left: 0, right: 0,
+                background: "rgba(0,0,0,0.45)",
+                fontSize: "0.42rem", color: "#fff",
+                textAlign: "center", padding: "2px 0",
+                letterSpacing: "0.04em", fontWeight: 600,
+              }}>
+                WEISS
+              </div>
+            </div>
+          )}
         </div>
       </Link>
 
