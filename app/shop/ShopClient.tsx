@@ -34,6 +34,10 @@ function getCardImage(product: Product): string {
         : "men";
     return `/products/shirt-${gender}-black-front.png`;
   }
+  if (product.category === "mug") {
+    const base = product.title.toLowerCase().includes("herz") ? "herztasse" : "tasse";
+    return `/products/${base}-front.png`;
+  }
   return product.image_url ?? "/gladdy-logo.png";
 }
 

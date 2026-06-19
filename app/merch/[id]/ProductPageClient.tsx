@@ -261,7 +261,7 @@ function BuyButton({
   );
 }
 
-export default function ProductPageClient({ product }: { product: Product }) {
+export default function ProductPageClient({ product, shopEnabled = false, testMode = false }: { product: Product; shopEnabled?: boolean; testMode?: boolean }) {
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
   const [selectedColor, setSelectedColor] = useState<ColorId>("black");
   const [activeThumb, setActiveThumb] = useState(0);
@@ -498,7 +498,18 @@ export default function ProductPageClient({ product }: { product: Product }) {
           )}
 
           {/* Checkout / Vormerken */}
-          {process.env.NEXT_PUBLIC_CHECKOUT_ENABLED === "true" ? (
+          {testMode && (
+            <div style={{
+              padding: "0.5rem 0.85rem",
+              background: "rgba(255,179,71,0.08)",
+              border: "1px solid rgba(255,179,71,0.25)",
+              borderRadius: "8px",
+              fontSize: "0.68rem", color: "#FFB347", letterSpacing: "0.04em",
+            }}>
+              ⚠ Test-Modus — Karte: 4242 4242 4242 4242 · 12/34 · 123
+            </div>
+          )}
+          {shopEnabled ? (
             <BuyButton
               product={product}
               color={selectedColor}

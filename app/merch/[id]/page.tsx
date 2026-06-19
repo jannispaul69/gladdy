@@ -4,6 +4,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/sections/Footer";
 import ProductPageClient from "./ProductPageClient";
 import type { Product } from "@/components/sections/Merch";
+import { getShopSettings } from "@/lib/shop-settings";
 
 async function getProduct(id: string): Promise<Product | null> {
   try {
@@ -43,14 +44,14 @@ export default async function ProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const product = await getProduct(id);
+  const [product, settings] = await Promise.all([getProduct(id), getShopSettings()]);
   if (!product) notFound();
 
   return (
     <>
       <Nav />
       <main style={{ minHeight: "100vh", background: "var(--background)" }}>
-        <ProductPageClient product={product} />
+        <ProductPageClient product={product} shopEnabled={settings.shopEnabled} testMode={settings.testMode} />
       </main>
       <Footer />
     </>

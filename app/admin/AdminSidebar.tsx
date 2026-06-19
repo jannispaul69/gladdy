@@ -13,6 +13,7 @@ import {
   ShoppingCart,
   FolderOpen,
   Bell,
+  Settings,
   LogOut,
   Menu,
   X,
@@ -28,6 +29,7 @@ const NAV = [
   { href: "/admin/orders", icon: ShoppingCart, label: "Bestellungen" },
   { href: "/admin/waitlist",  icon: Bell,       label: "Warteliste" },
   { href: "/admin/pressekit", icon: FolderOpen, label: "Pressematerial" },
+  { href: "/admin/shop",      icon: Settings,   label: "Shop-Einstellungen" },
 ];
 
 export default function AdminSidebar() {
