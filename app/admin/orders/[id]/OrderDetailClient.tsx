@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Truck, Mail, RotateCcw } from "lucide-react";
+import { CARRIERS, trackingUrl, type ShippingCarrier } from "@/lib/email-templates";
 
 type OrderStatus = "pending" | "paid" | "shipped" | "delivered" | "refunded" | "cancelled";
 
@@ -20,6 +21,7 @@ interface Props {
   initialStatus: OrderStatus;
   initialTracking: string;
   initialNotes: string;
+  initialCarrier: ShippingCarrier;
   customerEmail: string;
 }
 
@@ -28,11 +30,13 @@ export default function OrderDetailClient({
   initialStatus,
   initialTracking,
   initialNotes,
+  initialCarrier,
   customerEmail,
 }: Props) {
   const router = useRouter();
   const [status,   setStatus]   = useState<OrderStatus>(initialStatus);
   const [tracking, setTracking] = useState(initialTracking);
+  const [carrier,  setCarrier]  = useState<ShippingCarrier>(initialCarrier);
   const [notes,    setNotes]    = useState(initialNotes);
   const [saving,   setSaving]   = useState(false);
   const [msg,      setMsg]      = useState<{ ok: boolean; text: string } | null>(null);
@@ -64,7 +68,7 @@ export default function OrderDetailClient({
 
   async function handleShipNow() {
     if (!tracking.trim()) { showMsg(false, "Bitte zuerst eine Tracking-Nummer eingeben."); return; }
-    const ok = await patch({ status: "shipped", tracking_number: tracking });
+    const ok = await patch({ status: "shipped", tracking_number: tracking, shipping_carrier: carrier });
     if (ok) { setStatus("shipped"); showMsg(true, "Als versendet markiert — Kunde wird per E-Mail benachrichtigt."); }
   }
 
@@ -177,13 +181,35 @@ export default function OrderDetailClient({
 
       {/* ── Tracking ───────────────────────────────────────────────────────── */}
       <div style={card}>
-        <span style={sectionLabel}>Tracking-Nummer</span>
+        <span style={sectionLabel}>Versand & Tracking</span>
+
+        {/* Carrier selector */}
+        <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap", margin: "0.75rem 0 0.65rem" }}>
+          {CARRIERS.map(c => (
+            <button
+              key={c.value}
+              onClick={() => setCarrier(c.value)}
+              style={{
+                padding: "0.3rem 0.75rem", borderRadius: "100px", fontSize: "0.7rem",
+                fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
+                border: carrier === c.value ? "1.5px solid var(--primary)" : "1.5px solid rgba(255,255,255,0.1)",
+                background: carrier === c.value ? "rgba(230,34,140,0.12)" : "transparent",
+                color: carrier === c.value ? "var(--primary)" : "rgba(255,255,255,0.35)",
+                transition: "all 0.15s",
+              }}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Tracking input + save */}
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <input
             type="text"
             value={tracking}
             onChange={e => setTracking(e.target.value)}
-            placeholder="z. B. 1Z999AA10123456784"
+            placeholder="Tracking-Nummer …"
             style={{
               flex: 1, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
               borderRadius: "7px", padding: "0.6rem 0.85rem", color: "#fff",
@@ -191,25 +217,26 @@ export default function OrderDetailClient({
             }}
           />
           <button
-            onClick={() => patch({ tracking_number: tracking }).then(ok => ok && showMsg(true, "Tracking gespeichert."))}
+            onClick={() => patch({ tracking_number: tracking, shipping_carrier: carrier }).then(ok => ok && showMsg(true, "Tracking gespeichert — Versandmail wurde gesendet."))}
             disabled={saving}
             style={{
               padding: "0.6rem 1rem", borderRadius: "7px", fontSize: "0.75rem",
               fontWeight: 600, cursor: saving ? "wait" : "pointer", fontFamily: "inherit",
               background: "rgba(230,34,140,0.15)", border: "1px solid rgba(230,34,140,0.3)",
-              color: "var(--primary)", transition: "background 0.15s",
+              color: "var(--primary)", transition: "background 0.15s", whiteSpace: "nowrap",
             }}
           >
             Speichern
           </button>
         </div>
+
         {tracking && (
           <a
-            href={`https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${tracking}`}
+            href={trackingUrl(carrier, tracking)}
             target="_blank" rel="noopener noreferrer"
             style={{ display: "inline-block", marginTop: "0.5rem", fontSize: "0.68rem", color: "#60a5fa", textDecoration: "none" }}
           >
-            DHL-Tracking öffnen →
+            {CARRIERS.find(c => c.value === carrier)?.label ?? "Tracking"} öffnen →
           </a>
         )}
       </div>

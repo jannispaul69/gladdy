@@ -20,7 +20,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const allowed = ["status", "tracking_number", "notes"];
+  const allowed = ["status", "tracking_number", "notes", "shipping_carrier"];
   const update: Record<string, string> = { updated_at: new Date().toISOString() };
   for (const key of allowed) {
     if (key in body) update[key] = body[key];
@@ -34,39 +34,50 @@ export async function PATCH(
   const { getSupabaseAdmin } = await import("@/lib/supabase-admin");
   const supabase = getSupabaseAdmin();
 
+  // Fetch current order before update
   const { data: order } = await supabase
     .from("orders")
-    .select("customer_email, customer_name, total_cents, items, tracking_number")
+    .select("customer_email, customer_name, total_cents, items, tracking_number, shipping_carrier, status")
     .eq("id", id)
     .single();
 
   const { error } = await supabase.from("orders").update(update).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Send shipping notification when status changes to "shipped"
-  if (update.status === "shipped" && order) {
-    const trackingNum = update.tracking_number ?? order.tracking_number;
-    const resendKey = process.env.RESEND_API_KEY;
-    if (resendKey && order.customer_email && trackingNum) {
-      const resend = new Resend(resendKey);
-      try {
-        await resend.emails.send({
-          from:    FROM,
-          to:      order.customer_email,
-          subject: "Dein GLADDY-Merch ist unterwegs! 📦",
-          html:    shippingNotificationHtml({
-            customerName:   order.customer_name,
-            orderId:        id,
-            items:          order.items,
-            totalCents:     order.total_cents,
-            trackingNumber: trackingNum,
-          }),
-        });
-      } catch (e) {
-        console.error("[orders/patch] Shipping email failed:", e);
-      }
+  // Send shipping email when:
+  // a) status is explicitly set to "shipped", OR
+  // b) tracking_number is updated and order is already "shipped"
+  const newStatus    = update.status ?? order?.status;
+  const newTracking  = update.tracking_number ?? order?.tracking_number;
+  const newCarrier   = update.shipping_carrier ?? order?.shipping_carrier ?? "dhl";
+  const shouldEmail  =
+    (update.status === "shipped" || (update.tracking_number && order?.status === "shipped")) &&
+    newTracking;
+
+  const resendKey = process.env.RESEND_API_KEY;
+  if (shouldEmail && resendKey && order?.customer_email && newTracking) {
+    const resend = new Resend(resendKey);
+    try {
+      await resend.emails.send({
+        from:    FROM,
+        to:      order.customer_email,
+        subject: "Dein GLADDY-Merch ist unterwegs! 📦",
+        html:    shippingNotificationHtml({
+          customerName:   order.customer_name,
+          orderId:        id,
+          items:          order.items,
+          totalCents:     order.total_cents,
+          trackingNumber: newTracking,
+          carrier:        newCarrier,
+        }),
+      });
+    } catch (e) {
+      console.error("[orders/patch] Shipping email failed:", e);
     }
   }
+
+  // Suppress unused variable warning
+  void newStatus;
 
   return NextResponse.json({ ok: true });
 }

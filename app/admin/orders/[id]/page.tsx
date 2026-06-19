@@ -31,6 +31,7 @@ interface Order {
   items: StripeLineItem[] | null;
   shipping_address: ShippingAddress | null;
   shipping_rate: string | null;
+  shipping_carrier: string | null;
   tracking_number: string | null;
   notes: string | null;
   updated_at: string | null;
@@ -229,6 +230,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           initialStatus={order.status}
           initialTracking={order.tracking_number ?? ""}
           initialNotes={order.notes ?? ""}
+          initialCarrier={(order.shipping_carrier as "dhl" | "dpd" | "hermes" | "gls" | "other") ?? "dhl"}
           customerEmail={order.customer_email}
         />
       </div>

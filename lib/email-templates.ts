@@ -4,6 +4,26 @@
 
 export const FROM = process.env.RESEND_FROM_EMAIL ?? "GLADDY <noreply@gladdy-offiziell.de>";
 
+export type ShippingCarrier = "dhl" | "dpd" | "hermes" | "gls" | "other";
+
+export const CARRIERS: { value: ShippingCarrier; label: string }[] = [
+  { value: "dhl",    label: "DHL" },
+  { value: "dpd",    label: "DPD" },
+  { value: "hermes", label: "Hermes" },
+  { value: "gls",    label: "GLS" },
+  { value: "other",  label: "Sonstiger" },
+];
+
+export function trackingUrl(carrier: string, trackingNumber: string): string {
+  const t = encodeURIComponent(trackingNumber);
+  switch (carrier) {
+    case "dpd":    return `https://tracking.dpd.de/status/de_DE/parcel/${t}`;
+    case "hermes": return `https://www.myhermes.de/empfangen/paketsuche/sendungsverfolgung/#${t}`;
+    case "gls":    return `https://gls-group.com/DE/de/paketverfolgung?match=${t}`;
+    default:       return `https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${t}`;
+  }
+}
+
 type OrderItem = {
   description?: string;
   quantity?: number;
@@ -193,16 +213,19 @@ export function shippingNotificationHtml({
   items,
   totalCents,
   trackingNumber,
+  carrier = "dhl",
 }: {
   customerName: string;
   orderId: string;
   items: OrderItem[] | null;
   totalCents: number;
   trackingNumber: string;
+  carrier?: string;
 }) {
   const orderNum = orderId.slice(0, 8).toUpperCase();
   const name = customerName ? esc(customerName).split(" ")[0] : "du";
-  const dhlUrl = `https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${encodeURIComponent(trackingNumber)}`;
+  const carrierLabel = CARRIERS.find(c => c.value === carrier)?.label ?? "DHL";
+  const trackUrl = trackingUrl(carrier, trackingNumber);
 
   return wrap(`
     <p style="margin:0 0 6px;">${badge("Dein Paket ist unterwegs", "#60a5fa")}</p>
@@ -215,9 +238,9 @@ export function shippingNotificationHtml({
     </p>
 
     <div style="background:#0A0A0A;border:1px solid rgba(230,34,140,0.25);border-radius:10px;padding:28px 24px;text-align:center;margin-bottom:28px;">
-      <p style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin:0 0 10px;">Tracking-Nummer</p>
-      <p style="font-family:'Courier New',monospace;font-size:20px;font-weight:700;color:#fff;letter-spacing:0.08em;margin:0 0 22px;">${esc(trackingNumber)}</p>
-      ${pinkButton("Sendung verfolgen →", dhlUrl)}
+      <p style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin:0 0 6px;">Tracking-Nummer (${carrierLabel})</p>
+      <p style="font-family:'Courier New',monospace;font-size:20px;font-weight:700;color:#fff;letter-spacing:0.08em;margin:0 0 20px;">${esc(trackingNumber)}</p>
+      ${pinkButton(`Bei ${carrierLabel} verfolgen →`, trackUrl)}
     </div>
 
     ${divider()}
