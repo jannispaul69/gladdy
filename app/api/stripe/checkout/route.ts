@@ -79,6 +79,9 @@ export async function POST(req: NextRequest) {
       },
     ],
     metadata: { source: "gladdy-merch" },
+    payment_intent_data: {
+      description: "GLADDY Merch Shop",
+    },
   });
 
   return NextResponse.json({ url: session.url });
