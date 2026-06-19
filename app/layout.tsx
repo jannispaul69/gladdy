@@ -20,7 +20,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "GLADDY | Partyschlager & Ballermann",
+  title: "GLADDY | Partyschlager & an der Playa",
   description:
     "GLADDY – Partyschlager-Künstler für unvergessliche Events, Bühnen und Feiern. Jetzt buchen!",
   icons: {
@@ -28,15 +28,15 @@ export const metadata: Metadata = {
     apple: [{ url: "/favicon.png" }],
   },
   openGraph: {
-    title: "GLADDY | Partyschlager & Ballermann",
-    description: "Partyschlager & Ballermann — Hol dir die Party auf deine Bühne.",
+    title: "GLADDY | Partyschlager & an der Playa",
+    description: "Partyschlager & an der Playa — Hol dir die Party auf deine Bühne.",
     type: "website",
     images: [{ url: "/og-image.png", width: 1080, height: 1350, alt: "GLADDY" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "GLADDY | Partyschlager & Ballermann",
-    description: "Partyschlager & Ballermann — Jetzt buchen!",
+    title: "GLADDY | Partyschlager & an der Playa",
+    description: "Partyschlager & an der Playa — Jetzt buchen!",
     images: ["/og-image.png"],
   },
   metadataBase: new URL("https://gladdy-offiziell.de"),

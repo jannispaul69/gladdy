@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
@@ -25,24 +25,51 @@ const CATEGORY_LABELS: Record<string, string> = {
   hoodie: "Hoodie",
   mug: "Tasse",
   cap: "Cap",
+  bundle: "Fan Bundle",
   other: "Merch",
 };
 
-function getCardImage(product: Product): string {
+function getCardImages(product: Product): string[] {
   if (product.category === "shirt" || product.category === "hoodie") {
     const gender =
       product.title.toLowerCase().includes("damen") || product.image_url?.includes("women")
         ? "women"
         : "men";
-    return `/products/shirt-${gender}-black-front.png`;
+    return [
+      `/products/shirt-${gender}-black-front.png`,
+      `/products/shirt-${gender}-white-front.png`,
+    ];
   }
-  return product.image_url ?? "/gladdy-logo.png";
+  if (product.category === "mug") {
+    const base = product.title.toLowerCase().includes("herz") ? "herztasse" : "tasse";
+    return [
+      `/products/${base}-front.png`,
+      `/products/${base}-left.png`,
+      `/products/${base}-right.png`,
+    ];
+  }
+  return [product.image_url ?? "/gladdy-logo.png"];
 }
 
 function MerchCarouselCard({ product }: { product: Product }) {
   const isShirt = product.category === "shirt" || product.category === "hoodie";
-  const imgSrc  = getCardImage(product);
+  const images  = getCardImages(product);
   const label   = CATEGORY_LABELS[product.category] ?? "Merch";
+
+  const [imgIdx, setImgIdx] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const timer = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setImgIdx((i) => (i + 1) % images.length);
+        setVisible(true);
+      }, 380);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [images.length]);
 
   return (
     <div
@@ -60,67 +87,51 @@ function MerchCarouselCard({ product }: { product: Product }) {
       }}
     >
       <Link href={`/merch/${product.id}`} style={{ display: "block", textDecoration: "none" }}>
-        {/* wrapper gives us a stacking context for the variant thumbnail */}
-        <div style={{ position: "relative" }}>
-          <div style={{
-            position: "relative", aspectRatio: "1/1",
-            background: isShirt ? "#111" : "#181818",
-            overflow: "hidden",
-          }}>
-            <Image
-              src={imgSrc}
-              alt={product.title}
-              fill
-              style={{ objectFit: "cover", objectPosition: "center top" }}
-              sizes="260px"
-            />
-            <div className="merch-card-hover" style={{
-              position: "absolute", inset: 0,
-              background: "rgba(230,34,140,0.08)",
-              opacity: 0, transition: "opacity 0.2s",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <span style={{
-                background: "rgba(230,34,140,0.9)", color: "#fff",
-                fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.1em",
-                padding: "0.45rem 1rem", borderRadius: "100px",
-                textTransform: "uppercase",
-              }}>Details →</span>
-            </div>
-          </div>
-
-          {/* White variant thumbnail in bottom-right corner */}
-          {isShirt && (
-            <div style={{
-              position: "absolute", bottom: "10px", right: "10px",
-              width: "58px", height: "58px",
-              borderRadius: "10px",
-              overflow: "hidden",
-              border: "2px solid rgba(255,255,255,0.55)",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.45)",
-              background: "#f0f0f0",
-              zIndex: 2,
+        <div style={{ position: "relative", aspectRatio: "1/1", background: isShirt ? "#111" : "#181818", overflow: "hidden" }}>
+          <Image
+            src={images[imgIdx]}
+            alt={product.title}
+            fill
+            style={{
+              objectFit: "cover",
+              objectPosition: "center top",
+              opacity: visible ? 1 : 0,
+              transition: "opacity 0.38s ease",
             }}
-              title="Auch in Weiß erhältlich"
-            >
-              <Image
-                src={`/products/shirt-${product.title.toLowerCase().includes("damen") ? "women" : "men"}-white-front.png`}
-                alt="Auch in Weiß"
-                fill
-                style={{ objectFit: "cover", objectPosition: "center top" }}
-                sizes="58px"
-              />
-              <div style={{
-                position: "absolute", bottom: 0, left: 0, right: 0,
-                background: "rgba(0,0,0,0.45)",
-                fontSize: "0.42rem", color: "#fff",
-                textAlign: "center", padding: "2px 0",
-                letterSpacing: "0.04em", fontWeight: 600,
-              }}>
-                WEISS
-              </div>
+            sizes="260px"
+          />
+
+          {/* Slide indicator dots */}
+          {images.length > 1 && (
+            <div style={{
+              position: "absolute", bottom: "8px", left: "50%", transform: "translateX(-50%)",
+              display: "flex", gap: "5px", zIndex: 3,
+            }}>
+              {images.map((_, i) => (
+                <div key={i} style={{
+                  width: i === imgIdx ? "14px" : "5px",
+                  height: "5px",
+                  borderRadius: "3px",
+                  background: i === imgIdx ? "rgba(230,34,140,0.9)" : "rgba(255,255,255,0.35)",
+                  transition: "width 0.3s ease, background 0.3s ease",
+                }} />
+              ))}
             </div>
           )}
+
+          <div className="merch-card-hover" style={{
+            position: "absolute", inset: 0,
+            background: "rgba(230,34,140,0.08)",
+            opacity: 0, transition: "opacity 0.2s",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <span style={{
+              background: "rgba(230,34,140,0.9)", color: "#fff",
+              fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.1em",
+              padding: "0.45rem 1rem", borderRadius: "100px",
+              textTransform: "uppercase",
+            }}>Details →</span>
+          </div>
         </div>
       </Link>
 
@@ -133,24 +144,11 @@ function MerchCarouselCard({ product }: { product: Product }) {
             {product.title}
           </h3>
         </div>
-        {/* Color swatches for shirts/hoodies */}
         {isShirt && (
           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <div title="Schwarz" style={{
-              width: "16px", height: "16px", borderRadius: "50%",
-              background: "#111",
-              border: "2px solid rgba(255,255,255,0.35)",
-              flexShrink: 0,
-            }} />
-            <div title="Weiß" style={{
-              width: "16px", height: "16px", borderRadius: "50%",
-              background: "#f5f5f5",
-              border: "2px solid rgba(255,255,255,0.35)",
-              flexShrink: 0,
-            }} />
-            <span style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.3)", letterSpacing: "0.06em" }}>
-              2 Farben
-            </span>
+            <div title="Schwarz" style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#111", border: "2px solid rgba(255,255,255,0.35)", flexShrink: 0 }} />
+            <div title="Weiß" style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#f5f5f5", border: "2px solid rgba(255,255,255,0.35)", flexShrink: 0 }} />
+            <span style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.3)", letterSpacing: "0.06em" }}>2 Farben</span>
           </div>
         )}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", paddingTop: "0.75rem", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
@@ -190,7 +188,6 @@ function MerchCarousel({ products }: { products: Product[] }) {
 
   return (
     <div style={{ position: "relative" }}>
-      {/* Arrows — hidden on mobile */}
       <div className="carousel-arrows" style={{ position: "absolute", top: "50%", transform: "translateY(-50%)", left: "-20px", right: "-20px", display: "flex", justifyContent: "space-between", pointerEvents: "none", zIndex: 2 }}>
         {(["left", "right"] as const).map((dir) => (
           <button
@@ -211,7 +208,6 @@ function MerchCarousel({ products }: { products: Product[] }) {
         ))}
       </div>
 
-      {/* Scroll container */}
       <div
         ref={scrollRef}
         style={{
@@ -228,7 +224,6 @@ function MerchCarousel({ products }: { products: Product[] }) {
         {products.map((p) => (
           <MerchCarouselCard key={p.id} product={p} />
         ))}
-        {/* "Alle ansehen" card */}
         <div style={{
           flex: "0 0 200px", scrollSnapAlign: "start",
           border: "1px dashed rgba(230,34,140,0.2)", borderRadius: "14px",
@@ -264,14 +259,13 @@ function MerchCarousel({ products }: { products: Product[] }) {
 }
 
 export default function Merch({ products = [] }: { products?: Product[] }) {
-  const ref  = useRef<HTMLDivElement>(null);
+  const ref    = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
     <section id="merch" aria-label="Merch & Shop" style={{ background: "var(--background)", padding: "6rem 1.5rem" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
 
-        {/* Header */}
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 28 }}
@@ -310,7 +304,6 @@ export default function Merch({ products = [] }: { products?: Product[] }) {
           </div>
         </motion.div>
 
-        {/* Carousel */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -333,7 +326,6 @@ export default function Merch({ products = [] }: { products?: Product[] }) {
         }
         .merch-snap-card:hover .merch-card-hover { opacity: 1 !important; }
         .merch-detail-btn:hover { background: rgba(230,34,140,0.12) !important; }
-        /* Hide scrollbar */
         div[style*="overflowX: auto"]::-webkit-scrollbar { display: none; }
         @media (max-width: 640px) { .carousel-arrows { display: none !important; } }
       `}</style>
