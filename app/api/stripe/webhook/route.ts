@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { Resend } from "resend";
+import { FROM, orderConfirmationHtml } from "@/lib/email-templates";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +30,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
   } else {
-    // No webhook secret configured — accept directly (only safe for local testing)
     event = JSON.parse(rawBody) as Stripe.Event;
   }
 
@@ -55,18 +56,46 @@ async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.
   const supabase = getSupabaseAdmin();
 
   const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 50 });
-
   const addr = session.collected_information?.shipping_details?.address ?? session.customer_details?.address ?? null;
 
-  await supabase.from("orders").insert({
-    customer_email:           session.customer_email ?? session.customer_details?.email ?? "",
-    customer_name:            session.customer_details?.name ?? "",
-    total_cents:              session.amount_total ?? 0,
-    status:                   "paid",
-    stripe_payment_intent_id: session.payment_intent as string,
-    items:                    lineItems.data,
-    shipping_address:         addr,
-    shipping_rate:            session.shipping_cost?.shipping_rate as string ?? null,
-    updated_at:               new Date().toISOString(),
-  });
+  const customerEmail = session.customer_email ?? session.customer_details?.email ?? "";
+  const customerName  = session.customer_details?.name ?? "";
+
+  const { data: order } = await supabase
+    .from("orders")
+    .insert({
+      customer_email:           customerEmail,
+      customer_name:            customerName,
+      total_cents:              session.amount_total ?? 0,
+      status:                   "paid",
+      stripe_payment_intent_id: session.payment_intent as string,
+      items:                    lineItems.data,
+      shipping_address:         addr,
+      shipping_rate:            session.shipping_cost?.shipping_rate as string ?? null,
+      updated_at:               new Date().toISOString(),
+    })
+    .select("id")
+    .single();
+
+  // Send order confirmation email
+  const resendKey = process.env.RESEND_API_KEY;
+  if (resendKey && customerEmail && order?.id) {
+    const resend = new Resend(resendKey);
+    try {
+      await resend.emails.send({
+        from:    FROM,
+        to:      customerEmail,
+        subject: "Deine GLADDY-Bestellung ist eingegangen! 🎉",
+        html:    orderConfirmationHtml({
+          customerName,
+          orderId:         order.id,
+          items:           lineItems.data,
+          totalCents:      session.amount_total ?? 0,
+          shippingAddress: addr,
+        }),
+      });
+    } catch (e) {
+      console.error("[stripe/webhook] Order confirmation email failed:", e);
+    }
+  }
 }

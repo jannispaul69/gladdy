@@ -1,0 +1,235 @@
+// ── GLADDY Email Templates ────────────────────────────────────────────────────
+// All transactional emails: order confirmation, shipping notification.
+// Design: dark background (#0A0A0A), pink gradient accents, white text.
+
+export const FROM = process.env.RESEND_FROM_EMAIL ?? "GLADDY <noreply@gladdy-offiziell.de>";
+
+type OrderItem = {
+  description?: string;
+  quantity?: number;
+  amount_total?: number;
+};
+
+type ShippingAddress = {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  postal_code?: string;
+  country?: string;
+};
+
+function fmt(cents: number) {
+  return (cents / 100).toFixed(2).replace(".", ",") + " €";
+}
+
+function esc(s: string) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// ── Shared layout helpers ─────────────────────────────────────────────────────
+
+function header() {
+  return `
+    <div style="background:#0A0A0A;padding:32px 24px;border-radius:12px 12px 0 0;text-align:center;">
+      <span style="font-weight:900;color:#fff;font-size:30px;letter-spacing:0.12em;font-family:Arial Black,Impact,sans-serif;">GLADDY</span>
+      <div style="color:#E6228C;font-size:9px;letter-spacing:0.28em;text-transform:uppercase;margin-top:4px;">Party Crew</div>
+    </div>
+  `;
+}
+
+function emailFooter() {
+  return `
+    <div style="background:#0A0A0A;border-radius:0 0 12px 12px;padding:20px 24px;text-align:center;">
+      <p style="color:rgba(255,255,255,0.3);font-size:11px;margin:0 0 6px;line-height:1.6;">
+        GLADDY Party Crew &middot; <a href="https://gladdy-offiziell.de" style="color:#E6228C;text-decoration:none;">gladdy-offiziell.de</a>
+      </p>
+      <p style="color:rgba(255,255,255,0.18);font-size:10px;margin:0;">
+        Du erhältst diese E-Mail, weil du eine Bestellung in unserem Shop aufgegeben hast.
+      </p>
+    </div>
+  `;
+}
+
+function wrap(content: string) {
+  return `<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GLADDY</title></head>
+<body style="margin:0;padding:24px 0;background:#1a1a1a;font-family:Inter,-apple-system,Arial,sans-serif;">
+  <div style="max-width:560px;margin:0 auto;">
+    ${header()}
+    <div style="background:#141414;border-left:1px solid rgba(230,34,140,0.15);border-right:1px solid rgba(230,34,140,0.15);padding:32px 28px;">
+      ${content}
+    </div>
+    ${emailFooter()}
+  </div>
+</body>
+</html>`;
+}
+
+function divider() {
+  return `<div style="border-top:1px solid rgba(255,255,255,0.07);margin:24px 0;"></div>`;
+}
+
+function badge(text: string, color = "#E6228C") {
+  return `<span style="display:inline-block;background:${color}22;border:1px solid ${color}50;color:${color};font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:3px 10px;border-radius:100px;font-weight:600;">${text}</span>`;
+}
+
+function itemsTable(items: OrderItem[], totalCents: number) {
+  const rows = items.map(i => `
+    <tr>
+      <td style="padding:10px 0;font-size:14px;color:rgba(255,255,255,0.85);border-bottom:1px solid rgba(255,255,255,0.06);">
+        ${esc(i.description ?? "Produkt")}
+        ${i.quantity && i.quantity > 1 ? `<span style="color:rgba(255,255,255,0.35);font-size:12px;"> &times; ${i.quantity}</span>` : ""}
+      </td>
+      <td style="padding:10px 0;font-size:14px;color:#FFB347;text-align:right;border-bottom:1px solid rgba(255,255,255,0.06);white-space:nowrap;font-weight:600;">
+        ${i.amount_total != null ? fmt(i.amount_total) : ""}
+      </td>
+    </tr>
+  `).join("");
+
+  return `
+    <table style="border-collapse:collapse;width:100%;">
+      ${rows}
+      <tr>
+        <td style="padding:14px 0 0;font-size:15px;font-weight:700;color:#fff;">Gesamt inkl. Versand</td>
+        <td style="padding:14px 0 0;font-size:15px;font-weight:700;color:#E6228C;text-align:right;">${fmt(totalCents)}</td>
+      </tr>
+    </table>
+  `;
+}
+
+function pinkButton(label: string, url: string) {
+  return `<a href="${url}" style="display:inline-block;background:linear-gradient(135deg,#FF3D9A,#B01570);color:#fff;padding:13px 32px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:700;letter-spacing:0.04em;">${label}</a>`;
+}
+
+// ── Template 1: Bestellbestätigung ───────────────────────────────────────────
+
+export function orderConfirmationHtml({
+  customerName,
+  orderId,
+  items,
+  totalCents,
+  shippingAddress,
+}: {
+  customerName: string;
+  orderId: string;
+  items: OrderItem[] | null;
+  totalCents: number;
+  shippingAddress: ShippingAddress | null;
+}) {
+  const orderNum = orderId.slice(0, 8).toUpperCase();
+  const name = customerName ? esc(customerName).split(" ")[0] : "du";
+
+  const addressHtml = shippingAddress
+    ? `
+      <div style="background:#0f0f0f;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:14px 18px;margin-top:8px;">
+        <p style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.9;margin:0;">
+          ${customerName ? `${esc(customerName)}<br>` : ""}
+          ${shippingAddress.line1 ? `${esc(shippingAddress.line1)}<br>` : ""}
+          ${shippingAddress.line2 ? `${esc(shippingAddress.line2)}<br>` : ""}
+          ${(shippingAddress.postal_code || shippingAddress.city) ? `${esc(shippingAddress.postal_code ?? "")} ${esc(shippingAddress.city ?? "")}<br>` : ""}
+          ${shippingAddress.country ? esc(shippingAddress.country) : ""}
+        </p>
+      </div>
+    `
+    : "";
+
+  return wrap(`
+    <p style="margin:0 0 6px;">${badge("Bestellung eingegangen", "#4ade80")}</p>
+
+    <h1 style="font-size:22px;font-weight:800;color:#fff;margin:16px 0 8px;line-height:1.3;">
+      Danke, ${name}! 🎉
+    </h1>
+    <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.75;margin:0 0 24px;">
+      Wir haben deine Bestellung erhalten und machen sie direkt fertig für den Versand.
+      Sobald dein Paket auf dem Weg ist, schicken wir dir eine E-Mail mit der Tracking-Nummer.
+    </p>
+
+    ${divider()}
+
+    <p style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.28);margin:0 0 12px;">Bestellung #${orderNum}</p>
+
+    ${itemsTable(items ?? [], totalCents)}
+
+    ${shippingAddress ? `
+      ${divider()}
+      <p style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.28);margin:0 0 8px;">Lieferadresse</p>
+      ${addressHtml}
+    ` : ""}
+
+    ${divider()}
+
+    <div style="background:#0f0f0f;border:1px solid rgba(230,34,140,0.12);border-radius:8px;padding:18px 20px;">
+      <p style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:0.1em;text-transform:uppercase;margin:0 0 12px;">Wie geht es weiter?</p>
+      <table style="border-collapse:collapse;width:100%;">
+        <tr>
+          <td style="padding:5px 12px 5px 0;vertical-align:top;width:20px;"><span style="color:#4ade80;font-size:14px;">✓</span></td>
+          <td style="padding:5px 0;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.5;">Zahlung bestätigt</td>
+        </tr>
+        <tr>
+          <td style="padding:5px 12px 5px 0;vertical-align:top;"><span style="color:rgba(255,255,255,0.18);font-size:14px;">○</span></td>
+          <td style="padding:5px 0;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.5;">Wir packen dein Paket (1–2 Werktage)</td>
+        </tr>
+        <tr>
+          <td style="padding:5px 12px 5px 0;vertical-align:top;"><span style="color:rgba(255,255,255,0.18);font-size:14px;">○</span></td>
+          <td style="padding:5px 0;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.5;">Du bekommst eine E-Mail mit deiner Tracking-Nummer</td>
+        </tr>
+      </table>
+    </div>
+
+    ${divider()}
+
+    <p style="font-size:13px;color:rgba(255,255,255,0.3);margin:0;line-height:1.7;">
+      Fragen zu deiner Bestellung? Antworte einfach auf diese E-Mail.
+    </p>
+  `);
+}
+
+// ── Template 2: Versandbestätigung ───────────────────────────────────────────
+
+export function shippingNotificationHtml({
+  customerName,
+  orderId,
+  items,
+  totalCents,
+  trackingNumber,
+}: {
+  customerName: string;
+  orderId: string;
+  items: OrderItem[] | null;
+  totalCents: number;
+  trackingNumber: string;
+}) {
+  const orderNum = orderId.slice(0, 8).toUpperCase();
+  const name = customerName ? esc(customerName).split(" ")[0] : "du";
+  const dhlUrl = `https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode=${encodeURIComponent(trackingNumber)}`;
+
+  return wrap(`
+    <p style="margin:0 0 6px;">${badge("Dein Paket ist unterwegs", "#60a5fa")}</p>
+
+    <h1 style="font-size:22px;font-weight:800;color:#fff;margin:16px 0 8px;line-height:1.3;">
+      Auf dem Weg zu dir! 📦
+    </h1>
+    <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.75;margin:0 0 28px;">
+      Hey ${name}, dein GLADDY-Merch ist losgefahren. Mit der Tracking-Nummer unten kannst du es jederzeit verfolgen.
+    </p>
+
+    <div style="background:#0A0A0A;border:1px solid rgba(230,34,140,0.25);border-radius:10px;padding:28px 24px;text-align:center;margin-bottom:28px;">
+      <p style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin:0 0 10px;">Tracking-Nummer</p>
+      <p style="font-family:'Courier New',monospace;font-size:20px;font-weight:700;color:#fff;letter-spacing:0.08em;margin:0 0 22px;">${esc(trackingNumber)}</p>
+      ${pinkButton("Sendung verfolgen →", dhlUrl)}
+    </div>
+
+    ${divider()}
+
+    <p style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.28);margin:0 0 12px;">Bestellung #${orderNum}</p>
+
+    ${itemsTable(items ?? [], totalCents)}
+
+    ${divider()}
+
+    <p style="font-size:13px;color:rgba(255,255,255,0.3);margin:0;line-height:1.7;">
+      Bei Fragen antworte einfach auf diese E-Mail &mdash; wir helfen dir gerne weiter.
+    </p>
+  `);
+}
