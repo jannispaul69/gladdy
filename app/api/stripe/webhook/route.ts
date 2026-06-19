@@ -56,7 +56,7 @@ async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.
 
   const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 50 });
 
-  const addr = session.shipping_details?.address ?? session.customer_details?.address ?? null;
+  const addr = session.collected_information?.shipping_details?.address ?? session.customer_details?.address ?? null;
 
   await supabase.from("orders").insert({
     customer_email:           session.customer_email ?? session.customer_details?.email ?? "",
