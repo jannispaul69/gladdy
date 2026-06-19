@@ -181,6 +181,86 @@ function ShopNotifyForm() {
   );
 }
 
+function BuyButton({
+  product, color, size, isShirt,
+}: {
+  product: Product;
+  color: ColorId;
+  size: Size | null | undefined;
+  isShirt: boolean;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState<string | null>(null);
+
+  async function handleBuy() {
+    if (isShirt && !size) {
+      setError("Bitte zuerst eine Größe auswählen.");
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    try {
+      const colorLabel = color === "black" ? "Schwarz" : "Weiß";
+      const name = isShirt
+        ? `${product.title} — ${colorLabel}, Größe ${size}`
+        : product.title;
+
+      const origin = typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_BASE_URL ?? "";
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: [{ name, price_cents: product.price_cents, quantity: 1 }],
+          success_url: `${origin}/merch/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url:  `${origin}/merch/${product.id}?canceled=1`,
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setError(data.error ?? "Fehler beim Checkout. Bitte erneut versuchen.");
+        setLoading(false);
+      }
+    } catch {
+      setError("Verbindungsfehler. Bitte erneut versuchen.");
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+      <button
+        onClick={handleBuy}
+        disabled={loading}
+        style={{
+          width: "100%",
+          background: loading ? "rgba(230,34,140,0.5)" : "linear-gradient(135deg, #FF3D9A, #B01570)",
+          color: "#fff", border: "none", borderRadius: "10px",
+          padding: "1rem 1.5rem", fontSize: "1rem", fontWeight: 700,
+          letterSpacing: "0.06em", cursor: loading ? "wait" : "pointer",
+          fontFamily: "inherit", transition: "opacity 0.2s",
+          boxShadow: "0 6px 24px rgba(230,34,140,0.4)",
+          textTransform: "uppercase",
+        }}
+      >
+        {loading ? "Weiterleitung …" : "Jetzt kaufen →"}
+      </button>
+      {isShirt && !size && (
+        <p style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.35)", margin: 0, textAlign: "center" }}>
+          Bitte Größe auswählen
+        </p>
+      )}
+      {error && (
+        <p style={{ fontSize: "0.72rem", color: "#f87171", margin: 0 }}>{error}</p>
+      )}
+      <p style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.2)", margin: 0, textAlign: "center" }}>
+        Sicherer Checkout via Stripe · Versand DE/AT/CH
+      </p>
+    </div>
+  );
+}
+
 export default function ProductPageClient({ product }: { product: Product }) {
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
   const [selectedColor, setSelectedColor] = useState<ColorId>("black");
@@ -417,8 +497,17 @@ export default function ProductPageClient({ product }: { product: Product }) {
             </div>
           )}
 
-          {/* Vormerken CTA */}
-          <ShopNotifyForm />
+          {/* Checkout / Vormerken */}
+          {process.env.NEXT_PUBLIC_CHECKOUT_ENABLED === "true" ? (
+            <BuyButton
+              product={product}
+              color={selectedColor}
+              size={isShirt ? selectedSize : undefined}
+              isShirt={isShirt}
+            />
+          ) : (
+            <ShopNotifyForm />
+          )}
 
           {/* Accordion: Produktdetails */}
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: "0.25rem" }}>
