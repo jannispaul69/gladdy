@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShoppingCart, TrendingUp, Clock, Truck } from "lucide-react";
+import { ShoppingCart, TrendingUp, Clock, Truck, Plus } from "lucide-react";
 
 type OrderStatus = "pending" | "paid" | "shipped" | "delivered" | "refunded" | "cancelled";
 
@@ -12,6 +12,7 @@ interface Order {
   status: OrderStatus;
   items: { description?: string; quantity?: number }[] | null;
   tracking_number: string | null;
+  archived: boolean | null;
 }
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
@@ -27,13 +28,19 @@ function formatPrice(cents: number) {
   return (cents / 100).toFixed(2).replace(".", ",") + " €";
 }
 
-async function getOrders(): Promise<Order[]> {
+async function getOrders(showArchived: boolean): Promise<Order[]> {
   try {
     const { getSupabaseAdmin } = await import("@/lib/supabase-admin");
-    const { data } = await getSupabaseAdmin()
+    let query = getSupabaseAdmin()
       .from("orders")
-      .select("id, created_at, customer_name, customer_email, total_cents, status, items, tracking_number")
+      .select("id, created_at, customer_name, customer_email, total_cents, status, items, tracking_number, archived")
       .order("created_at", { ascending: false });
+    if (showArchived) {
+      query = query.eq("archived", true);
+    } else {
+      query = query.or("archived.is.null,archived.eq.false");
+    }
+    const { data } = await query;
     return (data ?? []) as Order[];
   } catch {
     return [];
@@ -46,22 +53,28 @@ export default async function OrdersPage({
   searchParams: Promise<{ status?: string }>;
 }) {
   const { status: filterStatus } = await searchParams;
-  const allOrders = await getOrders();
+  const showArchived = filterStatus === "archived";
+  const allOrders = await getOrders(false);
+  const archivedOrders = await getOrders(true);
 
-  const orders = filterStatus && filterStatus !== "all"
-    ? allOrders.filter(o => o.status === filterStatus)
-    : allOrders;
+  const activeOrders = showArchived ? archivedOrders : (
+    filterStatus && filterStatus !== "all"
+      ? allOrders.filter(o => o.status === filterStatus)
+      : allOrders
+  );
+  const orders = activeOrders;
 
   const revenue   = allOrders.filter(o => ["paid","shipped","delivered"].includes(o.status)).reduce((s, o) => s + o.total_cents, 0);
   const toShip    = allOrders.filter(o => o.status === "paid").length;
   const inTransit = allOrders.filter(o => o.status === "shipped").length;
 
   const FILTERS = [
-    { value: "all",       label: "Alle",      count: allOrders.length },
-    { value: "paid",      label: "Bezahlt",   count: allOrders.filter(o => o.status === "paid").length },
-    { value: "shipped",   label: "Versendet", count: allOrders.filter(o => o.status === "shipped").length },
-    { value: "delivered", label: "Geliefert", count: allOrders.filter(o => o.status === "delivered").length },
-    { value: "cancelled", label: "Storniert", count: allOrders.filter(o => o.status === "cancelled").length },
+    { value: "all",       label: "Alle",       count: allOrders.length },
+    { value: "paid",      label: "Bezahlt",    count: allOrders.filter(o => o.status === "paid").length },
+    { value: "shipped",   label: "Versendet",  count: allOrders.filter(o => o.status === "shipped").length },
+    { value: "delivered", label: "Geliefert",  count: allOrders.filter(o => o.status === "delivered").length },
+    { value: "cancelled", label: "Storniert",  count: allOrders.filter(o => o.status === "cancelled").length },
+    { value: "archived",  label: "Archiviert", count: archivedOrders.length },
   ];
 
   const active = filterStatus ?? "all";
@@ -69,13 +82,30 @@ export default async function OrdersPage({
   return (
     <div style={{ padding: "2rem 2.5rem", maxWidth: "1100px" }}>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.35rem" }}>
-        <ShoppingCart size={20} style={{ color: "var(--primary)" }} strokeWidth={1.75} />
-        <h1 style={{ fontFamily: "var(--font-anton)", fontSize: "1.75rem", letterSpacing: "0.06em", color: "#fff" }}>BESTELLUNGEN</h1>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem", marginBottom: "1.75rem" }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.35rem" }}>
+            <ShoppingCart size={20} style={{ color: "var(--primary)" }} strokeWidth={1.75} />
+            <h1 style={{ fontFamily: "var(--font-anton)", fontSize: "1.75rem", letterSpacing: "0.06em", color: "#fff" }}>BESTELLUNGEN</h1>
+          </div>
+          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.85rem" }}>
+            {allOrders.length} Bestellungen gesamt
+          </p>
+        </div>
+        <Link
+          href="/admin/orders/new"
+          style={{
+            display: "inline-flex", alignItems: "center", gap: "0.4rem",
+            padding: "0.6rem 1.1rem", borderRadius: "8px", fontSize: "0.8rem",
+            fontWeight: 600, textDecoration: "none", letterSpacing: "0.04em",
+            background: "linear-gradient(135deg, #FF3D9A, #B01570)",
+            color: "#fff", flexShrink: 0,
+          }}
+        >
+          <Plus size={14} strokeWidth={2.5} />
+          Neue Bestellung
+        </Link>
       </div>
-      <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.85rem", marginBottom: "1.75rem" }}>
-        {allOrders.length} Bestellungen gesamt
-      </p>
 
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "0.85rem", marginBottom: "2rem" }}>

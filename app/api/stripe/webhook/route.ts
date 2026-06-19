@@ -78,6 +78,14 @@ async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.
     .single();
 
   // Send order confirmation email
+  const emailAddr = addr ? {
+    line1:       addr.line1       ?? undefined,
+    line2:       addr.line2       ?? undefined,
+    city:        addr.city        ?? undefined,
+    postal_code: addr.postal_code ?? undefined,
+    country:     addr.country     ?? undefined,
+  } : null;
+
   const resendKey = process.env.RESEND_API_KEY;
   if (resendKey && customerEmail && order?.id) {
     const resend = new Resend(resendKey);
@@ -89,9 +97,9 @@ async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.
         html:    orderConfirmationHtml({
           customerName,
           orderId:         order.id,
-          items:           lineItems.data,
+          items:           lineItems.data.map(i => ({ ...i, description: i.description ?? undefined, quantity: i.quantity ?? undefined })),
           totalCents:      session.amount_total ?? 0,
-          shippingAddress: addr,
+          shippingAddress: emailAddr,
         }),
       });
     } catch (e) {

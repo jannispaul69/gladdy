@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Truck, Mail, RotateCcw } from "lucide-react";
+import { Truck, Mail, RotateCcw, Archive, Trash2 } from "lucide-react";
 import { CARRIERS, trackingUrl, type ShippingCarrier } from "@/lib/email-templates";
 
 type OrderStatus = "pending" | "paid" | "shipped" | "delivered" | "refunded" | "cancelled";
@@ -23,6 +23,7 @@ interface Props {
   initialNotes: string;
   initialCarrier: ShippingCarrier;
   customerEmail: string;
+  initialArchived?: boolean;
 }
 
 export default function OrderDetailClient({
@@ -32,12 +33,14 @@ export default function OrderDetailClient({
   initialNotes,
   initialCarrier,
   customerEmail,
+  initialArchived = false,
 }: Props) {
   const router = useRouter();
   const [status,   setStatus]   = useState<OrderStatus>(initialStatus);
   const [tracking, setTracking] = useState(initialTracking);
   const [carrier,  setCarrier]  = useState<ShippingCarrier>(initialCarrier);
   const [notes,    setNotes]    = useState(initialNotes);
+  const [archived, setArchived] = useState(initialArchived);
   const [saving,   setSaving]   = useState(false);
   const [msg,      setMsg]      = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -76,6 +79,33 @@ export default function OrderDetailClient({
     setStatus(s);
     const ok = await patch({ status: s });
     if (ok) showMsg(true, "Status gespeichert.");
+  }
+
+  async function handleArchive() {
+    const next = !archived;
+    const ok = await patch({ archived: String(next) });
+    if (ok) {
+      setArchived(next);
+      showMsg(true, next ? "Bestellung archiviert." : "Bestellung wiederhergestellt.");
+    }
+  }
+
+  async function handleDelete() {
+    if (!window.confirm("Bestellung wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.")) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}`, { method: "DELETE" });
+      const json = await res.json();
+      if (json.ok) {
+        router.push("/admin/orders");
+      } else {
+        showMsg(false, json.error ?? "Fehler beim Löschen.");
+      }
+    } catch {
+      showMsg(false, "Verbindungsfehler");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleResendEmail() {
@@ -302,6 +332,40 @@ export default function OrderDetailClient({
           }}
         >
           Notiz speichern
+        </button>
+      </div>
+
+      {/* ── Archivieren / Löschen ──────────────────────────────────────────── */}
+      <div style={{ display: "flex", gap: "0.5rem" }}>
+        <button
+          onClick={handleArchive}
+          disabled={saving}
+          style={{
+            flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+            padding: "0.6rem 1rem", borderRadius: "7px", fontSize: "0.75rem",
+            fontWeight: 500, cursor: saving ? "wait" : "pointer", fontFamily: "inherit",
+            background: archived ? "rgba(167,139,250,0.08)" : "rgba(255,255,255,0.04)",
+            border: archived ? "1px solid rgba(167,139,250,0.3)" : "1px solid rgba(255,255,255,0.1)",
+            color: archived ? "#a78bfa" : "rgba(255,255,255,0.45)",
+            transition: "all 0.15s",
+          }}
+        >
+          <Archive size={13} strokeWidth={1.75} />
+          {archived ? "Wiederherstellen" : "Archivieren"}
+        </button>
+        <button
+          onClick={handleDelete}
+          disabled={saving}
+          style={{
+            flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+            padding: "0.6rem 1rem", borderRadius: "7px", fontSize: "0.75rem",
+            fontWeight: 500, cursor: saving ? "wait" : "pointer", fontFamily: "inherit",
+            background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.2)",
+            color: "#f87171", transition: "all 0.15s",
+          }}
+        >
+          <Trash2 size={13} strokeWidth={1.75} />
+          Löschen
         </button>
       </div>
 

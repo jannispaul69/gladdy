@@ -20,14 +20,17 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const allowed = ["status", "tracking_number", "notes", "shipping_carrier"];
-  const update: Record<string, string> = { updated_at: new Date().toISOString() };
+  const allowed = ["status", "tracking_number", "notes", "shipping_carrier", "archived"];
+  const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
   for (const key of allowed) {
     if (key in body) update[key] = body[key];
   }
 
+  // archived is boolean — cast it properly
+  if ("archived" in body) update["archived"] = body["archived"] === "true";
+
   const validStatuses = ["pending", "paid", "shipped", "delivered", "refunded", "cancelled"];
-  if (update.status && !validStatuses.includes(update.status)) {
+  if (update.status && !validStatuses.includes(update.status as string)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
@@ -47,9 +50,9 @@ export async function PATCH(
   // Send shipping email when:
   // a) status is explicitly set to "shipped", OR
   // b) tracking_number is updated and order is already "shipped"
-  const newStatus    = update.status ?? order?.status;
-  const newTracking  = update.tracking_number ?? order?.tracking_number;
-  const newCarrier   = update.shipping_carrier ?? order?.shipping_carrier ?? "dhl";
+  const newStatus    = (update.status as string | undefined) ?? order?.status;
+  const newTracking  = (update.tracking_number as string | undefined) ?? order?.tracking_number;
+  const newCarrier   = (update.shipping_carrier as string | undefined) ?? order?.shipping_carrier ?? "dhl";
   const shouldEmail  =
     (update.status === "shipped" || (update.tracking_number && order?.status === "shipped")) &&
     newTracking;
@@ -79,5 +82,20 @@ export async function PATCH(
   // Suppress unused variable warning
   void newStatus;
 
+  return NextResponse.json({ ok: true });
+}
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const { getSupabaseAdmin } = await import("@/lib/supabase-admin");
+  const { error } = await getSupabaseAdmin().from("orders").delete().eq("id", id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

@@ -35,6 +35,7 @@ interface Order {
   tracking_number: string | null;
   notes: string | null;
   updated_at: string | null;
+  archived: boolean | null;
 }
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
@@ -232,6 +233,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           initialNotes={order.notes ?? ""}
           initialCarrier={(order.shipping_carrier as "dhl" | "dpd" | "hermes" | "gls" | "other") ?? "dhl"}
           customerEmail={order.customer_email}
+          initialArchived={order.archived ?? false}
         />
       </div>
 

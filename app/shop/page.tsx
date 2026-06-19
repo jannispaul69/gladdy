@@ -4,10 +4,11 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/sections/Footer";
 import ShopClient from "./ShopClient";
 import type { Product } from "@/components/sections/Merch";
+import { getShopSettings } from "@/lib/shop-settings";
 
 export const metadata: Metadata = {
   title: "Shop — GLADDY Party Crew Merch",
-  description: "Offizieller GLADDY Party Crew Merch Shop. T-Shirts, Tassen und mehr — jetzt vormerken.",
+  description: "Offizieller GLADDY Party Crew Merch Shop. T-Shirts, Tassen und mehr.",
 };
 
 async function getProducts(): Promise<Product[]> {
@@ -27,7 +28,8 @@ async function getProducts(): Promise<Product[]> {
 }
 
 export default async function ShopPage() {
-  const products = await getProducts();
+  const [products, settings] = await Promise.all([getProducts(), getShopSettings()]);
+  const shopOpen = settings.shopEnabled;
 
   return (
     <>
@@ -71,26 +73,28 @@ export default async function ShopPage() {
                   ALLE PRODUKTE
                 </h1>
                 <p style={{ color: "rgba(255,255,255,0.38)", fontSize: "0.9rem", lineHeight: 1.65 }}>
-                  Offizieller GLADDY Party Crew Merch · Shop öffnet bald
+                  Offizieller GLADDY Party Crew Merch{!shopOpen && " · Shop öffnet bald"}
                 </p>
               </div>
 
-              <div style={{
-                display: "inline-flex", alignItems: "center", gap: "0.6rem",
-                background: "rgba(230,34,140,0.06)",
-                border: "1px solid rgba(230,34,140,0.2)",
-                borderRadius: "100px", padding: "0.6rem 1.25rem",
-              }}>
-                <span style={{
-                  width: "7px", height: "7px", borderRadius: "50%",
-                  background: "#FFB347",
-                  boxShadow: "0 0 6px rgba(255,179,71,0.6)",
-                  flexShrink: 0,
-                }} />
-                <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)", letterSpacing: "0.06em" }}>
-                  Shop öffnet bald · jetzt vormerken
-                </span>
-              </div>
+              {!shopOpen && (
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: "0.6rem",
+                  background: "rgba(230,34,140,0.06)",
+                  border: "1px solid rgba(230,34,140,0.2)",
+                  borderRadius: "100px", padding: "0.6rem 1.25rem",
+                }}>
+                  <span style={{
+                    width: "7px", height: "7px", borderRadius: "50%",
+                    background: "#FFB347",
+                    boxShadow: "0 0 6px rgba(255,179,71,0.6)",
+                    flexShrink: 0,
+                  }} />
+                  <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)", letterSpacing: "0.06em" }}>
+                    Shop öffnet bald · jetzt vormerken
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -108,56 +112,58 @@ export default async function ShopPage() {
           )}
         </div>
 
-        {/* Waitlist Banner */}
-        <div style={{
-          background: "linear-gradient(135deg, rgba(230,34,140,0.08) 0%, rgba(176,21,112,0.04) 100%)",
-          borderTop: "1px solid rgba(230,34,140,0.12)",
-          padding: "3.5rem 1.5rem",
-        }}>
-          <div style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
-            <p style={{
-              fontFamily: "var(--font-anton)", fontSize: "1.5rem",
-              color: "#fff", letterSpacing: "0.06em", marginBottom: "0.5rem",
-            }}>
-              SHOP-LAUNCH-ALARM
-            </p>
-            <p style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.38)", marginBottom: "1.5rem", lineHeight: 1.65 }}>
-              Trag dich ein — du erfährst als Erstes, wenn der Shop öffnet und alle Produkte bestellbar sind.
-            </p>
-            <form
-              action="/api/shop-waitlist"
-              method="POST"
-              style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center" }}
-            >
-              <input
-                type="email"
-                name="email"
-                required
-                placeholder="deine@email.de"
-                style={{
-                  flex: 1, minWidth: "220px", maxWidth: "320px",
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  borderRadius: "100px", padding: "0.8rem 1.25rem",
-                  color: "#fff", fontSize: "0.875rem", outline: "none",
-                }}
-              />
-              <button
-                type="submit"
-                style={{
-                  background: "linear-gradient(135deg, #FF3D9A, #B01570)",
-                  color: "#fff", border: "none", borderRadius: "100px",
-                  padding: "0.8rem 1.5rem", fontSize: "0.875rem",
-                  letterSpacing: "0.06em", cursor: "pointer",
-                  fontFamily: "inherit", fontWeight: 600,
-                  boxShadow: "0 4px 20px rgba(230,34,140,0.3)",
-                }}
+        {/* Waitlist Banner — only shown when shop is not yet open */}
+        {!shopOpen && (
+          <div style={{
+            background: "linear-gradient(135deg, rgba(230,34,140,0.08) 0%, rgba(176,21,112,0.04) 100%)",
+            borderTop: "1px solid rgba(230,34,140,0.12)",
+            padding: "3.5rem 1.5rem",
+          }}>
+            <div style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
+              <p style={{
+                fontFamily: "var(--font-anton)", fontSize: "1.5rem",
+                color: "#fff", letterSpacing: "0.06em", marginBottom: "0.5rem",
+              }}>
+                SHOP-LAUNCH-ALARM
+              </p>
+              <p style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.38)", marginBottom: "1.5rem", lineHeight: 1.65 }}>
+                Trag dich ein — du erfährst als Erstes, wenn der Shop öffnet und alle Produkte bestellbar sind.
+              </p>
+              <form
+                action="/api/shop-waitlist"
+                method="POST"
+                style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center" }}
               >
-                Benachrichtigen
-              </button>
-            </form>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  placeholder="deine@email.de"
+                  style={{
+                    flex: 1, minWidth: "220px", maxWidth: "320px",
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    borderRadius: "100px", padding: "0.8rem 1.25rem",
+                    color: "#fff", fontSize: "0.875rem", outline: "none",
+                  }}
+                />
+                <button
+                  type="submit"
+                  style={{
+                    background: "linear-gradient(135deg, #FF3D9A, #B01570)",
+                    color: "#fff", border: "none", borderRadius: "100px",
+                    padding: "0.8rem 1.5rem", fontSize: "0.875rem",
+                    letterSpacing: "0.06em", cursor: "pointer",
+                    fontFamily: "inherit", fontWeight: 600,
+                    boxShadow: "0 4px 20px rgba(230,34,140,0.3)",
+                  }}
+                >
+                  Benachrichtigen
+                </button>
+              </form>
+            </div>
           </div>
-        </div>
+        )}
       </main>
       <Footer />
     </>
