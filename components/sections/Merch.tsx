@@ -97,6 +97,26 @@ function MerchCarouselCard({ product }: { product: Product }) {
             {product.title}
           </h3>
         </div>
+        {/* Color swatches for shirts/hoodies */}
+        {isShirt && (
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <div title="Schwarz" style={{
+              width: "16px", height: "16px", borderRadius: "50%",
+              background: "#111",
+              border: "2px solid rgba(255,255,255,0.35)",
+              flexShrink: 0,
+            }} />
+            <div title="Weiß" style={{
+              width: "16px", height: "16px", borderRadius: "50%",
+              background: "#f5f5f5",
+              border: "2px solid rgba(255,255,255,0.35)",
+              flexShrink: 0,
+            }} />
+            <span style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.3)", letterSpacing: "0.06em" }}>
+              2 Farben
+            </span>
+          </div>
+        )}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", paddingTop: "0.75rem", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
           <div>
             <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "#FFB347", lineHeight: 1 }}>
