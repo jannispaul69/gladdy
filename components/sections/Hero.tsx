@@ -113,7 +113,7 @@ export default function Hero() {
         {/* Randomly scattered badges */}
         <Badge style={{ top: "14%", left: "3%" }}>🎤 Live Acts</Badge>
         <Badge style={{ top: "58%", left: "1%", animationDelay: "0.7s" }}>🌴 Mallorca</Badge>
-        <Badge style={{ top: "35%", left: "7%", animationDelay: "1.3s" }}>🍺 Ballermann</Badge>
+        <Badge style={{ top: "35%", left: "7%", animationDelay: "1.3s" }}>🏖️ An der Playa</Badge>
         <Badge style={{ top: "80%", left: "5%", animationDelay: "0.4s" }}>🏆 Ruhrpott</Badge>
         <Badge style={{ top: "72%", left: "14%", animationDelay: "1.9s" }}>⚡ Energie</Badge>
         <Badge style={{ top: "10%", right: "6%", animationDelay: "0.9s" }}>🎉 Partyschlager</Badge>
@@ -152,7 +152,7 @@ export default function Hero() {
           transition={{ delay: 0.3, duration: 0.6 }}
           style={{ fontSize: "0.7rem", letterSpacing: "0.25em", color: "var(--primary)", textTransform: "uppercase", marginBottom: "1.25rem", fontWeight: 500 }}
         >
-          Partyschlager · Ballermann · Live
+          Partyschlager · Playa · Live
         </motion.p>
 
         {/* Main headline */}

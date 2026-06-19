@@ -101,7 +101,7 @@ export default function Footer() {
               GLADDY
             </div>
             <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.85rem", lineHeight: 1.65 }}>
-              Partyschlager & Ballermann.<br />
+              Partyschlager & Playa.<br />
               Bühne für Bühne ans Ziel.
             </p>
           </div>

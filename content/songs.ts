@@ -19,7 +19,7 @@ export const songs: Song[] = [
   {
     id: "2",
     title: "Ruhrpott Feeling",
-    subtitle: "Ballermann Edition",
+    subtitle: "Playa Edition",
     spotifyTrackId: "PLACEHOLDER_SPOTIFY_ID_2",
     youtubeVideoId: "PLACEHOLDER_YOUTUBE_ID_2",
     type: "both",

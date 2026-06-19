@@ -29,7 +29,7 @@ const blocks: Block[] = [
   {
     label: "Mission",
     headline: "Lizenz zur Eskalation",
-    text: "Laut mitsingen, lachen, feiern und einfach mal alles rauslassen – dafür steht Gladdy. Irgendwo zwischen Partyschlager, Eskalation und Gänsehautmomenten entsteht genau das, was ihn antreibt: Menschen glücklich zu machen. Der Traum vom Ballermann lebt bis heute – Schritt für Schritt, Bühne für Bühne. Denn am Ende geht es nicht nur um Musik. Es geht um Erinnerungen, Emotionen und das Gefühl, wirklich zu leben.",
+    text: "Laut mitsingen, lachen, feiern und einfach mal alles rauslassen – dafür steht Gladdy. Irgendwo zwischen Partyschlager, Eskalation und Gänsehautmomenten entsteht genau das, was ihn antreibt: Menschen glücklich zu machen. Der Traum von der Playa lebt bis heute – Schritt für Schritt, Bühne für Bühne. Denn am Ende geht es nicht nur um Musik. Es geht um Erinnerungen, Emotionen und das Gefühl, wirklich zu leben.",
   },
 ];
 
