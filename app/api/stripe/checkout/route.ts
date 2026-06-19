@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   const successUrl = body.success_url ?? `${origin}/merch/success?session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl  = body.cancel_url  ?? `${origin}/shop?canceled=1`;
 
-  const stripe = new Stripe(secretKey, { apiVersion: "2025-05-28.basil" });
+  const stripe = new Stripe(secretKey, { apiVersion: "2026-05-27.dahlia" });
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
