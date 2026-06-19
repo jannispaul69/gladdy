@@ -56,6 +56,8 @@ async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.
 
   const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 50 });
 
+  const addr = session.shipping_details?.address ?? session.customer_details?.address ?? null;
+
   await supabase.from("orders").insert({
     customer_email:           session.customer_email ?? session.customer_details?.email ?? "",
     customer_name:            session.customer_details?.name ?? "",
@@ -63,5 +65,8 @@ async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.
     status:                   "paid",
     stripe_payment_intent_id: session.payment_intent as string,
     items:                    lineItems.data,
+    shipping_address:         addr,
+    shipping_rate:            session.shipping_cost?.shipping_rate as string ?? null,
+    updated_at:               new Date().toISOString(),
   });
 }

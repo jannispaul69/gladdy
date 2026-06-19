@@ -1,186 +1,179 @@
-import { ShoppingCart, Zap } from "lucide-react";
-import { stripeEnabled } from "@/lib/stripe";
+import Link from "next/link";
+import { ShoppingCart, TrendingUp, Clock, Truck } from "lucide-react";
 
-async function getOrders() {
-  if (!stripeEnabled) return [];
-  try {
-    const { getSupabaseAdmin } = await import("@/lib/supabase-admin");
-    const supabase = getSupabaseAdmin();
-    const { data } = await supabase
-      .from("orders")
-      .select("*")
-      .order("created_at", { ascending: false });
-    return data ?? [];
-  } catch {
-    return [];
-  }
+type OrderStatus = "pending" | "paid" | "shipped" | "delivered" | "refunded" | "cancelled";
+
+interface Order {
+  id: string;
+  created_at: string;
+  customer_name: string;
+  customer_email: string;
+  total_cents: number;
+  status: OrderStatus;
+  items: { description?: string; quantity?: number }[] | null;
+  tracking_number: string | null;
 }
 
-const ORDER_STATUSES: Record<string, { label: string; color: string }> = {
-  pending: { label: "Ausstehend", color: "#fbbf24" },
-  paid: { label: "Bezahlt", color: "#4ade80" },
-  shipped: { label: "Versendet", color: "#60a5fa" },
-  delivered: { label: "Geliefert", color: "rgba(255,255,255,0.55)" },
-  refunded: { label: "Erstattet", color: "#f87171" },
-  cancelled: { label: "Storniert", color: "rgba(255,255,255,0.3)" },
+const STATUS_META: Record<string, { label: string; color: string }> = {
+  pending:   { label: "Ausstehend", color: "#fbbf24" },
+  paid:      { label: "Bezahlt",    color: "#4ade80" },
+  shipped:   { label: "Versendet",  color: "#60a5fa" },
+  delivered: { label: "Geliefert",  color: "#a78bfa" },
+  refunded:  { label: "Erstattet",  color: "#f87171" },
+  cancelled: { label: "Storniert",  color: "rgba(255,255,255,0.3)" },
 };
 
 function formatPrice(cents: number) {
   return (cents / 100).toFixed(2).replace(".", ",") + " €";
 }
 
-export default async function OrdersPage() {
-  const orders = await getOrders();
+async function getOrders(): Promise<Order[]> {
+  try {
+    const { getSupabaseAdmin } = await import("@/lib/supabase-admin");
+    const { data } = await getSupabaseAdmin()
+      .from("orders")
+      .select("id, created_at, customer_name, customer_email, total_cents, status, items, tracking_number")
+      .order("created_at", { ascending: false });
+    return (data ?? []) as Order[];
+  } catch {
+    return [];
+  }
+}
+
+export default async function OrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status: filterStatus } = await searchParams;
+  const allOrders = await getOrders();
+
+  const orders = filterStatus && filterStatus !== "all"
+    ? allOrders.filter(o => o.status === filterStatus)
+    : allOrders;
+
+  const revenue   = allOrders.filter(o => ["paid","shipped","delivered"].includes(o.status)).reduce((s, o) => s + o.total_cents, 0);
+  const toShip    = allOrders.filter(o => o.status === "paid").length;
+  const inTransit = allOrders.filter(o => o.status === "shipped").length;
+
+  const FILTERS = [
+    { value: "all",       label: "Alle",      count: allOrders.length },
+    { value: "paid",      label: "Bezahlt",   count: allOrders.filter(o => o.status === "paid").length },
+    { value: "shipped",   label: "Versendet", count: allOrders.filter(o => o.status === "shipped").length },
+    { value: "delivered", label: "Geliefert", count: allOrders.filter(o => o.status === "delivered").length },
+    { value: "cancelled", label: "Storniert", count: allOrders.filter(o => o.status === "cancelled").length },
+  ];
+
+  const active = filterStatus ?? "all";
 
   return (
     <div style={{ padding: "2rem 2.5rem", maxWidth: "1100px" }}>
+
       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.35rem" }}>
         <ShoppingCart size={20} style={{ color: "var(--primary)" }} strokeWidth={1.75} />
         <h1 style={{ fontFamily: "var(--font-anton)", fontSize: "1.75rem", letterSpacing: "0.06em", color: "#fff" }}>BESTELLUNGEN</h1>
       </div>
       <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.85rem", marginBottom: "1.75rem" }}>
-        {stripeEnabled ? `${orders.length} Bestellungen gesamt` : "Zahlungen noch nicht aktiviert"}
+        {allOrders.length} Bestellungen gesamt
       </p>
 
-      {!stripeEnabled && (
-        <div
-          style={{
-            background: "#141414",
-            border: "1px solid rgba(230,34,140,0.15)",
-            borderRadius: "12px",
-            padding: "2rem 2.5rem",
-            marginBottom: "2rem",
-            display: "flex",
-            gap: "1.5rem",
-            alignItems: "flex-start",
-          }}
-        >
-          <div
+      {/* Stats */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "0.85rem", marginBottom: "2rem" }}>
+        {[
+          { label: "Umsatz (bezahlt)", value: formatPrice(revenue), icon: TrendingUp, color: "#4ade80" },
+          { label: "Zu versenden",     value: toShip,               icon: Clock,      color: "#fbbf24" },
+          { label: "Unterwegs",        value: inTransit,            icon: Truck,      color: "#60a5fa" },
+        ].map(({ label, value, icon: Icon, color }) => (
+          <div key={label} style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "1rem 1.25rem" }}>
+            <Icon size={16} style={{ color, marginBottom: "0.5rem" }} strokeWidth={1.75} />
+            <div style={{ fontFamily: "var(--font-anton)", fontSize: typeof value === "string" ? "1.3rem" : "2rem", color: "#fff", letterSpacing: "0.04em", lineHeight: 1 }}>{value}</div>
+            <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.35)", marginTop: "0.2rem" }}>{label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filter tabs */}
+      <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginBottom: "1.25rem" }}>
+        {FILTERS.map(f => (
+          <Link key={f.value} href={`/admin/orders?status=${f.value}`}
             style={{
-              width: "44px",
-              height: "44px",
-              borderRadius: "8px",
-              background: "rgba(230,34,140,0.1)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
+              display: "inline-flex", alignItems: "center", gap: "0.4rem",
+              padding: "0.4rem 1rem", borderRadius: "100px", fontSize: "0.75rem",
+              letterSpacing: "0.05em", textDecoration: "none", transition: "all 0.15s",
+              border: active === f.value ? "1px solid var(--primary)" : "1px solid rgba(255,255,255,0.08)",
+              background: active === f.value ? "rgba(230,34,140,0.1)" : "transparent",
+              color: active === f.value ? "#fff" : "rgba(255,255,255,0.4)",
             }}
           >
-            <Zap size={20} style={{ color: "var(--primary)" }} strokeWidth={1.75} />
-          </div>
-          <div>
-            <h2 style={{ fontSize: "1rem", fontWeight: 500, color: "#fff", marginBottom: "0.5rem" }}>
-              Zahlungen einrichten
-            </h2>
-            <p style={{ fontSize: "0.875rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.7, marginBottom: "1.25rem", maxWidth: "520px" }}>
-              Stripe und PayPal sind noch nicht aktiviert. Trage die Zugangsdaten in die{" "}
-              <code style={{ fontSize: "0.8rem", background: "rgba(255,255,255,0.06)", padding: "0.1rem 0.4rem", borderRadius: "3px" }}>.env.local</code>-Datei ein, um Bestellungen entgegenzunehmen.
-            </p>
-            <div
-              style={{
-                background: "#1C1C1C",
-                borderRadius: "8px",
-                padding: "1rem 1.25rem",
-                fontFamily: "monospace",
-                fontSize: "0.78rem",
-                color: "rgba(255,255,255,0.55)",
-                lineHeight: 1.9,
-                border: "1px solid rgba(255,255,255,0.04)",
-              }}
-            >
-              <div><span style={{ color: "#60a5fa" }}>STRIPE_SECRET_KEY</span>=sk_live_...</div>
-              <div><span style={{ color: "#60a5fa" }}>STRIPE_PUBLISHABLE_KEY</span>=pk_live_...</div>
-              <div><span style={{ color: "#60a5fa" }}>STRIPE_WEBHOOK_SECRET</span>=whsec_...</div>
-              <div style={{ marginTop: "0.5rem" }}><span style={{ color: "#fbbf24" }}>PAYPAL_CLIENT_ID</span>=your-client-id</div>
-              <div><span style={{ color: "#fbbf24" }}>PAYPAL_CLIENT_SECRET</span>=your-secret</div>
-            </div>
+            {f.label}
+            <span style={{ fontSize: "0.62rem", background: active === f.value ? "rgba(230,34,140,0.2)" : "rgba(255,255,255,0.06)", padding: "0.05rem 0.4rem", borderRadius: "100px", color: active === f.value ? "var(--primary)" : "rgba(255,255,255,0.3)" }}>
+              {f.count}
+            </span>
+          </Link>
+        ))}
+      </div>
 
-            <div style={{ marginTop: "1.25rem", display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-              <div
-                style={{
-                  padding: "0.35rem 0.875rem",
-                  borderRadius: "100px",
-                  fontSize: "0.72rem",
-                  letterSpacing: "0.06em",
-                  background: "rgba(255,255,255,0.04)",
-                  color: "rgba(255,255,255,0.35)",
-                  border: "1px solid rgba(255,255,255,0.06)",
-                }}
-              >
-                💳 Stripe — Karten, SEPA, Sofort
-              </div>
-              <div
-                style={{
-                  padding: "0.35rem 0.875rem",
-                  borderRadius: "100px",
-                  fontSize: "0.72rem",
-                  letterSpacing: "0.06em",
-                  background: "rgba(255,255,255,0.04)",
-                  color: "rgba(255,255,255,0.35)",
-                  border: "1px solid rgba(255,255,255,0.06)",
-                }}
-              >
-                🅿️ PayPal — PayPal, Karte
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {orders.length > 0 && (
-        <div style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", overflow: "hidden" }}>
+      {/* Table */}
+      {orders.length > 0 ? (
+        <div style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", overflow: "hidden" }}>
           <div className="admin-table-scroll">
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ background: "#1C1C1C" }}>
-                {["Datum", "Kunde", "Betrag", "Status", "Stripe-ID"].map(h => (
-                  <th
-                    key={h}
-                    style={{ padding: "0.7rem 1rem", textAlign: "left", fontSize: "0.65rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", fontWeight: 500 }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order: Record<string, string | number>) => {
-                const st = ORDER_STATUSES[order.status as string] ?? { label: order.status as string, color: "rgba(255,255,255,0.4)" };
-                return (
-                  <tr key={order.id as string} style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                    <td style={{ padding: "0.875rem 1rem", fontSize: "0.8rem", color: "rgba(255,255,255,0.4)", whiteSpace: "nowrap" }}>
-                      {new Date(order.created_at as string).toLocaleDateString("de-DE")}
-                    </td>
-                    <td style={{ padding: "0.875rem 1rem", fontSize: "0.875rem" }}>
-                      <div style={{ fontWeight: 500 }}>{order.customer_name as string}</div>
-                      <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.3)" }}>{order.customer_email as string}</div>
-                    </td>
-                    <td style={{ padding: "0.875rem 1rem", fontSize: "0.875rem", fontWeight: 500 }}>
-                      {formatPrice(order.total_cents as number)}
-                    </td>
-                    <td style={{ padding: "0.875rem 1rem" }}>
-                      <span style={{ padding: "0.2rem 0.6rem", borderRadius: "100px", fontSize: "0.65rem", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 500, background: `${st.color}22`, color: st.color }}>
-                        {st.label}
-                      </span>
-                    </td>
-                    <td style={{ padding: "0.875rem 1rem", fontSize: "0.75rem", color: "rgba(255,255,255,0.25)", fontFamily: "monospace" }}>
-                      {(order.stripe_payment_intent_id as string | null) ?? "—"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: "#1C1C1C" }}>
+                  {["Bestellung", "Datum", "Kunde", "Artikel", "Betrag", "Status", ""].map(h => (
+                    <th key={h} style={{ padding: "0.7rem 1rem", textAlign: "left", fontSize: "0.62rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", fontWeight: 500, whiteSpace: "nowrap" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((order) => {
+                  const st = STATUS_META[order.status] ?? { label: order.status, color: "rgba(255,255,255,0.4)" };
+                  const itemSummary = order.items?.map(i => i.description ?? "Produkt").join(", ") ?? "—";
+                  const orderNum = order.id.slice(0, 8).toUpperCase();
+                  return (
+                    <tr key={order.id} style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }} className="order-row">
+                      <td style={{ padding: "0.875rem 1rem" }}>
+                        <Link href={`/admin/orders/${order.id}`} style={{ fontFamily: "monospace", fontSize: "0.78rem", color: "var(--primary)", textDecoration: "none", fontWeight: 600 }}>
+                          #{orderNum}
+                        </Link>
+                      </td>
+                      <td style={{ padding: "0.875rem 1rem", fontSize: "0.78rem", color: "rgba(255,255,255,0.4)", whiteSpace: "nowrap" }}>
+                        {new Date(order.created_at).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                      </td>
+                      <td style={{ padding: "0.875rem 1rem" }}>
+                        <div style={{ fontSize: "0.85rem", fontWeight: 500, color: "#fff" }}>{order.customer_name || "—"}</div>
+                        <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.3)" }}>{order.customer_email}</div>
+                      </td>
+                      <td style={{ padding: "0.875rem 1rem", fontSize: "0.78rem", color: "rgba(255,255,255,0.5)", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {itemSummary}
+                      </td>
+                      <td style={{ padding: "0.875rem 1rem", fontSize: "0.9rem", fontWeight: 700, color: "#FFB347", whiteSpace: "nowrap" }}>
+                        {formatPrice(order.total_cents)}
+                      </td>
+                      <td style={{ padding: "0.875rem 1rem" }}>
+                        <span style={{ padding: "0.2rem 0.6rem", borderRadius: "100px", fontSize: "0.62rem", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 500, background: `${st.color}20`, color: st.color, whiteSpace: "nowrap" }}>
+                          {st.label}
+                        </span>
+                      </td>
+                      <td style={{ padding: "0.875rem 1rem" }}>
+                        <Link href={`/admin/orders/${order.id}`} style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.3)", textDecoration: "none", whiteSpace: "nowrap" }} className="hover-pink">
+                          Details →
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
+        </div>
+      ) : (
+        <div style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "4rem", textAlign: "center", color: "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+          {active === "all" ? "Noch keine Bestellungen." : `Keine Bestellungen mit Status „${STATUS_META[active]?.label ?? active}".`}
         </div>
       )}
 
-      {stripeEnabled && orders.length === 0 && (
-        <div style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "3rem", textAlign: "center", color: "rgba(255,255,255,0.25)", fontSize: "0.875rem" }}>
-          Noch keine Bestellungen eingegangen.
-        </div>
-      )}
+      <style>{`.order-row:hover { background: rgba(255,255,255,0.02) !important; }`}</style>
     </div>
   );
 }

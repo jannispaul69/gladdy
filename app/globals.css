@@ -375,5 +375,10 @@ body {
 @media (max-width: 767px) {
   .product-page-grid {
     grid-template-columns: 1fr;
+    gap: 2rem !important;
+  }
+  /* Remove sticky on mobile — prevents image overlapping form content */
+  .product-page-grid > div:first-child {
+    position: static !important;
   }
 }
