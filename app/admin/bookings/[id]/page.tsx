@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { updateBookingStatus } from "@/app/actions/admin-bookings";
+import PressekitButton from "./PressekitButton";
 
 const STATUSES = [
   { value: "neu", label: "Neu" },
@@ -128,6 +129,15 @@ export default async function BookingDetailPage({
         >
           Per E-Mail antworten
         </a>
+      </div>
+
+      {/* Pressekit email */}
+      <div style={{ marginTop: "1rem", background: "#141414", border: "1px solid rgba(167,139,250,0.15)", borderRadius: "8px", padding: "1.25rem 1.5rem" }}>
+        <p style={{ fontSize: "0.65rem", letterSpacing: "0.15em", color: "#a78bfa", textTransform: "uppercase", marginBottom: "0.5rem", fontWeight: 500 }}>Veranstalter-Zugang</p>
+        <p style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.35)", marginBottom: "1rem", lineHeight: 1.6 }}>
+          Sendet dem Veranstalter den Link zum Pressekit-Bereich mit Passwort und allen Download-Dateien.
+        </p>
+        <PressekitButton bookingId={booking.id} />
       </div>
     </div>
   );

@@ -205,6 +205,102 @@ export function orderConfirmationHtml({
   `);
 }
 
+// ── Template 3: Pressekit-Zugang für Veranstalter ────────────────────────────
+
+export function pressekitEmailHtml({
+  veranstalterName,
+  pageUrl,
+  password,
+  files,
+}: {
+  veranstalterName: string;
+  pageUrl: string;
+  password: string;
+  files: { label: string; url: string; type: string }[];
+}) {
+  const name = veranstalterName ? esc(veranstalterName).split(" ")[0] : "Veranstalter";
+
+  const fileRows = files.map(f => `
+    <tr>
+      <td style="padding:10px 0;font-size:13px;color:rgba(255,255,255,0.75);border-bottom:1px solid rgba(255,255,255,0.05);">
+        ${esc(f.label)}
+        <span style="margin-left:6px;font-size:10px;color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:3px;padding:1px 5px;font-weight:600;">${esc(f.type)}</span>
+      </td>
+      <td style="padding:10px 0;text-align:right;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <a href="${f.url}" style="font-size:12px;color:#E6228C;text-decoration:none;font-weight:600;">↓ Download</a>
+      </td>
+    </tr>
+  `).join("");
+
+  const bookingFooter = `
+    <div style="background:#0A0A0A;border-radius:0 0 12px 12px;padding:20px 24px;text-align:center;">
+      <p style="color:rgba(255,255,255,0.3);font-size:11px;margin:0 0 6px;line-height:1.6;">
+        GLADDY Party Crew &middot; <a href="https://gladdy-offiziell.de" style="color:#E6228C;text-decoration:none;">gladdy-offiziell.de</a>
+      </p>
+      <p style="color:rgba(255,255,255,0.18);font-size:10px;margin:0;">
+        Du erhältst diese E-Mail, weil Gladdy für deine Veranstaltung gebucht wurde.
+      </p>
+    </div>
+  `;
+
+  return `<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GLADDY Veranstalter-Bereich</title></head>
+<body style="margin:0;padding:24px 0;background:#1a1a1a;font-family:Inter,-apple-system,Arial,sans-serif;">
+  <div style="max-width:560px;margin:0 auto;">
+    <div style="background:#0A0A0A;padding:32px 24px;border-radius:12px 12px 0 0;text-align:center;">
+      <span style="font-weight:900;color:#fff;font-size:30px;letter-spacing:0.12em;font-family:Arial Black,Impact,sans-serif;">GLADDY</span>
+      <div style="color:#E6228C;font-size:9px;letter-spacing:0.28em;text-transform:uppercase;margin-top:4px;">Party Crew</div>
+    </div>
+    <div style="background:#141414;border-left:1px solid rgba(230,34,140,0.15);border-right:1px solid rgba(230,34,140,0.15);padding:32px 28px;">
+      ${badge("Veranstalter-Bereich freigeschaltet", "#a78bfa")}
+
+      <h1 style="font-size:22px;font-weight:800;color:#fff;margin:16px 0 8px;line-height:1.3;">
+        Hallo ${name}! 🎤
+      </h1>
+      <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.75;margin:0 0 28px;">
+        Herzlich willkommen im Veranstalter-Bereich von Gladdy. Hier findest du alle Unterlagen für eine reibungslose Veranstaltungsplanung.
+      </p>
+
+      ${divider()}
+
+      <p style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.28);margin:0 0 16px;">Dein Zugang</p>
+
+      <div style="background:#0A0A0A;border:1px solid rgba(167,139,250,0.25);border-radius:10px;padding:22px 24px;margin-bottom:24px;">
+        <table style="border-collapse:collapse;width:100%;">
+          <tr>
+            <td style="padding:6px 0;font-size:12px;color:rgba(255,255,255,0.35);width:80px;">Seite</td>
+            <td style="padding:6px 0;font-size:13px;"><a href="${pageUrl}" style="color:#a78bfa;text-decoration:none;font-weight:600;">${pageUrl}</a></td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-size:12px;color:rgba(255,255,255,0.35);">Passwort</td>
+            <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:18px;font-weight:700;color:#fff;letter-spacing:0.12em;">${esc(password)}</td>
+          </tr>
+        </table>
+        <div style="margin-top:18px;text-align:center;">
+          ${pinkButton("Veranstalter-Bereich öffnen →", pageUrl)}
+        </div>
+      </div>
+
+      ${divider()}
+
+      <p style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.28);margin:0 0 12px;">Enthaltene Dateien</p>
+      <table style="border-collapse:collapse;width:100%;margin-bottom:24px;">
+        ${fileRows}
+      </table>
+
+      ${divider()}
+
+      <p style="font-size:13px;color:rgba(255,255,255,0.3);margin:0;line-height:1.7;">
+        Bei Fragen zu technischen Anforderungen oder für individuelle Absprachen antworte einfach auf diese E-Mail.
+      </p>
+    </div>
+    ${bookingFooter}
+  </div>
+</body>
+</html>`;
+}
+
 // ── Template 2: Versandbestätigung ───────────────────────────────────────────
 
 export function shippingNotificationHtml({
