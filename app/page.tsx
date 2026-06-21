@@ -7,7 +7,6 @@ import MerchSection from "@/components/sections/MerchSection";
 import BookingBanner from "@/components/sections/BookingBanner";
 import Booking from "@/components/sections/Booking";
 import FanCommunity from "@/components/sections/FanCommunity";
-import Pressekit from "@/components/sections/Pressekit";
 import Footer from "@/components/sections/Footer";
 import { getEvents } from "@/lib/events";
 
@@ -27,7 +26,6 @@ export default async function Home() {
         <Booking />
         <FanCommunity />
       </main>
-      <Pressekit />
       <Footer />
     </>
   );
