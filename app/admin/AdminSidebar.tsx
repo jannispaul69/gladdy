@@ -7,6 +7,7 @@ import { useState } from "react";
 import {
   LayoutDashboard,
   FileText,
+  Receipt,
   Calendar,
   Music,
   ShoppingBag,
@@ -22,8 +23,9 @@ import { adminLogout } from "@/app/actions/admin-auth";
 
 const NAV = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
-  { href: "/admin/bookings", icon: FileText, label: "Anfragen" },
-  { href: "/admin/events", icon: Calendar, label: "Termine" },
+  { href: "/admin/bookings",  icon: FileText, label: "Anfragen" },
+  { href: "/admin/dokumente", icon: Receipt,  label: "Dokumente" },
+  { href: "/admin/events",    icon: Calendar, label: "Termine" },
   { href: "/admin/songs", icon: Music, label: "Songs" },
   { href: "/admin/products", icon: ShoppingBag, label: "Produkte" },
   { href: "/admin/orders", icon: ShoppingCart, label: "Bestellungen" },

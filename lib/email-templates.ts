@@ -352,3 +352,66 @@ export function shippingNotificationHtml({
     </p>
   `);
 }
+
+// ── Template 4: Dokument-Versand (Angebot / Rechnung) ────────────────────────
+
+export function documentEmailHtml({
+  type, typeLabel, number, customerName, totalCents,
+  documentUrl, validUntil, dueDate, companyName,
+}: {
+  type: string;
+  typeLabel: string;
+  number: string | null;
+  customerName: string;
+  totalCents: number;
+  documentUrl: string;
+  validUntil?: string | null;
+  dueDate?: string | null;
+  companyName: string;
+}) {
+  const isOffer   = type === "angebot";
+  const badgeColor = isOffer ? "#a78bfa" : "#E6228C";
+  const firstName  = esc(customerName).split(" ")[0] || "Hallo";
+  const dateInfo   = isOffer && validUntil
+    ? `Dieses Angebot ist gültig bis <strong>${new Date(validUntil).toLocaleDateString("de-DE", { day:"2-digit", month:"long", year:"numeric" })}</strong>.`
+    : !isOffer && dueDate
+    ? `Bitte überweise den Betrag bis zum <strong>${new Date(dueDate).toLocaleDateString("de-DE", { day:"2-digit", month:"long", year:"numeric" })}</strong>.`
+    : "";
+
+  return wrap(`
+    <p style="margin:0 0 6px;">${badge(typeLabel, badgeColor)}</p>
+
+    <h1 style="font-size:22px;font-weight:800;color:#fff;margin:16px 0 8px;line-height:1.3;">
+      ${isOffer ? "Ihr Angebot ist bereit" : "Ihre Rechnung"}
+    </h1>
+    <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.75;margin:0 0 28px;">
+      Guten Tag ${firstName}, anbei ${isOffer ? "finden Sie Ihr Angebot" : "erhalten Sie Ihre Rechnung"} von <strong>${esc(companyName)}</strong>.
+    </p>
+
+    <div style="background:#0A0A0A;border:1px solid rgba(230,34,140,0.2);border-radius:10px;padding:24px;margin-bottom:28px;">
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <td style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding-bottom:4px;">${typeLabel}-Nr.</td>
+          <td style="text-align:right;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding-bottom:4px;">Betrag</td>
+        </tr>
+        <tr>
+          <td style="font-size:20px;font-weight:700;color:#fff;font-family:'Courier New',monospace;letter-spacing:0.06em;">${esc(number ?? "—")}</td>
+          <td style="text-align:right;font-size:20px;font-weight:700;color:#E6228C;">${fmt(totalCents)}</td>
+        </tr>
+      </table>
+      ${dateInfo ? `<p style="margin:16px 0 0;font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;">${dateInfo}</p>` : ""}
+    </div>
+
+    <div style="text-align:center;margin-bottom:28px;">
+      ${pinkButton(`${typeLabel} öffnen →`, documentUrl)}
+    </div>
+
+    ${isOffer ? `<p style="font-size:13px;color:rgba(255,255,255,0.4);text-align:center;margin:0 0 28px;line-height:1.6;">Sie können das Angebot direkt im Browser akzeptieren oder ablehnen &mdash; kein Account erforderlich.</p>` : ""}
+
+    ${divider()}
+
+    <p style="font-size:13px;color:rgba(255,255,255,0.3);margin:0;line-height:1.7;">
+      Bei Rückfragen antworten Sie einfach auf diese E-Mail.
+    </p>
+  `);
+}

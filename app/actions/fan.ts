@@ -1,6 +1,8 @@
 "use server";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { Resend } from "resend";
+import { FROM } from "@/lib/email-templates";
 
 const schema = z.object({
   email: z.string().email("Bitte eine gültige E-Mail-Adresse eingeben."),
@@ -29,6 +31,17 @@ export async function subscribeToFanList(
       return { error: "Diese E-Mail ist bereits eingetragen." };
     }
     return { error: "Etwas ist schiefgelaufen. Bitte später erneut versuchen." };
+  }
+
+  const resendKey = process.env.RESEND_API_KEY;
+  if (resendKey) {
+    const resend = new Resend(resendKey);
+    resend.emails.send({
+      from: FROM,
+      to: "info@gladdy-offiziell.de",
+      subject: "Neuer Fan eingetragen",
+      html: `<p>Neue Fan-Anmeldung: <strong>${parsed.data.email}</strong></p>`,
+    }).catch(() => {});
   }
 
   return { success: true };
