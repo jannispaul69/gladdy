@@ -266,18 +266,8 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.3 }}
-        style={{ position: "absolute", bottom: "1.5rem", left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem", cursor: "pointer", zIndex: 4 }}
-        onClick={() => document.querySelector("#ueber")?.scrollIntoView({ behavior: "smooth" })}
-        aria-label="Nach unten scrollen"
-      >
-        <span style={{ fontSize: "0.6rem", letterSpacing: "0.2em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase" }}>Scroll</span>
-        <motion.div animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }} style={{ width: "1px", height: "36px", background: "linear-gradient(to bottom, rgba(230,34,140,0.6), transparent)" }} />
-      </motion.div>
+      {/* Soft fade into the next section (#141414) */}
+      <div aria-hidden style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "26%", background: "linear-gradient(to bottom, transparent 0%, rgba(20,20,20,0.55) 55%, #141414 100%)", zIndex: 2, pointerEvents: "none" }} />
     </section>
   );
 }
