@@ -40,6 +40,48 @@ function Badge({ children, style }: { children: React.ReactNode; style?: React.C
   );
 }
 
+// ── Animated music equalizer ─────────────────────────────────
+function Equalizer({ style }: { style?: React.CSSProperties }) {
+  return (
+    <div aria-hidden style={{ position: "absolute", display: "flex", gap: "3px", alignItems: "flex-end", height: "30px", pointerEvents: "none", ...style }}>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <motion.span
+          key={i}
+          animate={{ scaleY: [0.3, 1, 0.45, 0.85, 0.3] }}
+          transition={{ duration: 1.1 + i * 0.18, repeat: Infinity, ease: "easeInOut" }}
+          style={{ width: "4px", height: "100%", borderRadius: "2px", background: "linear-gradient(to top, #E6228C, #a855f7)", transformOrigin: "bottom", opacity: 0.6 }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Rising, fading music note ────────────────────────────────
+function Note({ children, style, delay = 0 }: { children: React.ReactNode; style?: React.CSSProperties; delay?: number }) {
+  return (
+    <motion.span
+      aria-hidden
+      animate={{ y: [0, -70], opacity: [0, 0.7, 0], x: [0, 12, -4] }}
+      transition={{ duration: 7, repeat: Infinity, ease: "easeOut", delay }}
+      style={{ position: "absolute", fontSize: "1.5rem", color: "rgba(230,34,140,0.55)", pointerEvents: "none", ...style }}
+    >
+      {children}
+    </motion.span>
+  );
+}
+
+// ── Pulsing glow orb ─────────────────────────────────────────
+function Orb({ style, delay = 0, size = 10 }: { style?: React.CSSProperties; delay?: number; size?: number }) {
+  return (
+    <motion.span
+      aria-hidden
+      animate={{ scale: [1, 1.6, 1], opacity: [0.15, 0.55, 0.15] }}
+      transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut", delay }}
+      style={{ position: "absolute", width: size, height: size, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,90,180,0.9), transparent 70%)", pointerEvents: "none", ...style }}
+    />
+  );
+}
+
 export default function Hero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -171,6 +213,21 @@ export default function Hero() {
         <Badge style={{ top: "28%", right: "4%", animationDelay: "1.1s" }}>🎪 Festival</Badge>
       </motion.div>
 
+      {/* Right-side life: equalizer, music notes, pulsing orbs — desktop only */}
+      <div aria-hidden className="hidden lg:block">
+        <Equalizer style={{ top: "35%", right: "11%" }} />
+        <Note style={{ top: "62%", right: "14%" }} delay={0}>♪</Note>
+        <Note style={{ top: "50%", right: "20%" }} delay={2.6}>♫</Note>
+        <Note style={{ top: "74%", right: "24%" }} delay={4.4}>♬</Note>
+        <Orb style={{ top: "31%", right: "19%" }} delay={0} size={12} />
+        <Orb style={{ top: "54%", right: "8%" }} delay={1.2} size={8} />
+        <Orb style={{ top: "80%", right: "16%" }} delay={2.1} size={10} />
+        <Orb style={{ top: "42%", right: "27%" }} delay={0.6} size={6} />
+        {/* a little balance on the left */}
+        <Orb style={{ top: "66%", left: "12%" }} delay={1.6} size={9} />
+        <Note style={{ top: "74%", left: "16%" }} delay={3.3}>♪</Note>
+      </div>
+
       {/* ── Centered hero stack ── */}
       <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "920px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "6rem 1.25rem 3rem" }}>
 
@@ -266,8 +323,8 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* Soft fade into the next section (#141414) */}
-      <div aria-hidden style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "26%", background: "linear-gradient(to bottom, transparent 0%, rgba(20,20,20,0.55) 55%, #141414 100%)", zIndex: 2, pointerEvents: "none" }} />
+      {/* Soft fade into the next section (#141414) — behind the content */}
+      <div aria-hidden style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "26%", background: "linear-gradient(to bottom, transparent 0%, rgba(20,20,20,0.55) 55%, #141414 100%)", zIndex: 0, pointerEvents: "none" }} />
     </section>
   );
 }
