@@ -65,6 +65,20 @@ export function Orb({ style, delay = 0, size = 10 }: { style?: React.CSSProperti
   );
 }
 
+// ── Twinkling sparkle ────────────────────────────────────────
+export function Sparkle({ style, delay = 0, size = 12 }: { style?: React.CSSProperties; delay?: number; size?: number }) {
+  return (
+    <motion.span
+      aria-hidden
+      animate={{ opacity: [0.15, 1, 0.15], scale: [0.7, 1.15, 0.7], rotate: [0, 90, 0] }}
+      transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut", delay }}
+      style={{ position: "absolute", fontSize: `${size}px`, lineHeight: 1, color: "rgba(255,120,200,0.9)", textShadow: "0 0 8px rgba(230,34,140,0.6)", pointerEvents: "none", ...style }}
+    >
+      ✦
+    </motion.span>
+  );
+}
+
 // ── Rising, fading music note ────────────────────────────────
 export function Note({ children = "♪", style, delay = 0 }: { children?: React.ReactNode; style?: React.CSSProperties; delay?: number }) {
   return (
@@ -125,18 +139,25 @@ export function FloatingDecor({ labels = ["🎉 Party", "🍹 Playa"] }: { label
         <Note style={{ top: "62%", left: "5%" }} delay={0}>♪</Note>
         <Note style={{ top: "46%", right: "7%" }} delay={2.6}>♫</Note>
         <Equalizer style={{ top: "26%", right: "4%" }} />
+        <Sparkle style={{ top: "16%", left: "9%" }} delay={0} size={14} />
+        <Sparkle style={{ top: "56%", right: "11%" }} delay={1.2} size={12} />
+        <Sparkle style={{ top: "88%", left: "12%" }} delay={2.1} size={13} />
       </div>
       {/* Labelled party bubbles — from xl up (need wider side margins) */}
       <div aria-hidden className="hidden xl:block" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
         {labels[0] && <Badge style={{ top: "10%", left: "3%" }} delay={0}>{labels[0]}</Badge>}
         {labels[1] && <Badge style={{ bottom: "10%", right: "3%" }} delay={1.1}>{labels[1]}</Badge>}
       </div>
-      {/* Mobile / tablet: small glowing orbs tucked into the side gutters */}
+      {/* Mobile / tablet: mixed highlights tucked into the side gutters */}
       <div aria-hidden className="lg:hidden" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
-        <Orb style={{ top: "11%", left: "2.5%" }} delay={0} size={9} />
-        <Orb style={{ top: "85%", right: "2.5%" }} delay={1.3} size={9} />
-        <Orb style={{ top: "50%", left: "2%" }} delay={0.7} size={6} />
-        <Orb style={{ top: "38%", right: "2.5%" }} delay={2} size={7} />
+        <Orb style={{ top: "12%", left: "3%" }} delay={0} size={9} />
+        <Orb style={{ top: "84%", right: "3%" }} delay={1.3} size={9} />
+        <Orb style={{ top: "46%", left: "2%" }} delay={0.7} size={6} />
+        <Note style={{ top: "60%", left: "2.5%", fontSize: "1rem" }} delay={0}>♪</Note>
+        <Note style={{ top: "72%", right: "2.5%", fontSize: "0.95rem" }} delay={2.6}>♫</Note>
+        <Sparkle style={{ top: "24%", right: "4%" }} delay={0} size={11} />
+        <Sparkle style={{ top: "38%", left: "5%" }} delay={1.1} size={9} />
+        <Sparkle style={{ top: "92%", left: "7%" }} delay={2} size={12} />
       </div>
     </>
   );
