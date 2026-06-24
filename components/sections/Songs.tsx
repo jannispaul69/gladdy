@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { songs } from "@/content/songs";
+import { FloatingDecor } from "@/components/Decor";
 
 const allPlaceholder = songs.every(
   (s) => s.spotifyTrackId.startsWith("PLACEHOLDER") && s.youtubeVideoId.startsWith("PLACEHOLDER")
@@ -178,8 +179,9 @@ function SongCard({ song, index }: { song: (typeof songs)[0]; index: number }) {
 
 export default function Songs() {
   return (
-    <section id="songs" aria-label="Songs" style={{ background: "var(--background)", padding: "6rem 1.5rem" }}>
-      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+    <section id="songs" aria-label="Songs" style={{ background: "var(--background)", padding: "6rem 1.5rem", position: "relative", overflow: "hidden" }}>
+      <FloatingDecor labels={["🎶 Mitsingen", "🔥 Stimmung"]} />
+      <div style={{ maxWidth: "1100px", margin: "0 auto", position: "relative", zIndex: 1 }}>
         <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
           <p style={{ fontSize: "0.65rem", letterSpacing: "0.22em", color: "var(--primary)", textTransform: "uppercase", fontWeight: 500, marginBottom: "1rem" }}>
             Musik

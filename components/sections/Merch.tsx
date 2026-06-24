@@ -65,7 +65,7 @@ function MerchCarouselCard({ product }: { product: Product }) {
     const el = cardRef.current, g = glowRef.current;
     if (!el || !g) return;
     const r = el.getBoundingClientRect();
-    g.style.background = `radial-gradient(circle 240px at ${e.clientX - r.left}px ${e.clientY - r.top}px, rgba(230,34,140,0.22), transparent 65%)`;
+    g.style.background = `radial-gradient(circle 300px at ${e.clientX - r.left}px ${e.clientY - r.top}px, rgba(230,34,140,0.4), transparent 68%)`;
   }
 
   useEffect(() => {

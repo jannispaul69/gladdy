@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useBookingModal } from "@/context/booking-modal";
+import { FloatingDecor } from "@/components/Decor";
 
 const EVENT_TYPES = [
   { emoji: "🎪", label: "Stadtfest" },
@@ -38,6 +39,7 @@ export default function Booking() {
       {/* Background glow blobs */}
       <div aria-hidden style={{ position: "absolute", top: "-10%", left: "-5%", width: "40%", height: "60%", background: "radial-gradient(ellipse, rgba(230,34,140,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
       <div aria-hidden style={{ position: "absolute", bottom: "-10%", right: "-5%", width: "50%", height: "60%", background: "radial-gradient(ellipse, rgba(255,140,0,0.05) 0%, transparent 70%)", pointerEvents: "none" }} />
+      <FloatingDecor labels={["🎤 Live Acts", "⚡ Energie"]} />
 
       <div style={{ maxWidth: "1100px", margin: "0 auto", position: "relative", zIndex: 1 }}>
 

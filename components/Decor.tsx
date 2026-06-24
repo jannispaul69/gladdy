@@ -58,9 +58,9 @@ export function Orb({ style, delay = 0, size = 10 }: { style?: React.CSSProperti
   return (
     <motion.span
       aria-hidden
-      animate={{ scale: [1, 1.6, 1], opacity: [0.12, 0.5, 0.12] }}
+      animate={{ scale: [1, 1.7, 1], opacity: [0.3, 0.78, 0.3] }}
       transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut", delay }}
-      style={{ position: "absolute", width: size, height: size, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,90,180,0.9), transparent 70%)", pointerEvents: "none", ...style }}
+      style={{ position: "absolute", width: size, height: size, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,120,200,1), rgba(230,34,140,0.55) 55%, transparent 78%)", boxShadow: "0 0 16px 4px rgba(230,34,140,0.45)", pointerEvents: "none", ...style }}
     />
   );
 }
@@ -70,9 +70,23 @@ export function Note({ children = "♪", style, delay = 0 }: { children?: React.
   return (
     <motion.span
       aria-hidden
-      animate={{ y: [0, -70], opacity: [0, 0.6, 0], x: [0, 12, -4] }}
+      animate={{ y: [0, -90], opacity: [0, 0.8, 0], x: [0, 14, -6] }}
       transition={{ duration: 7, repeat: Infinity, ease: "easeOut", delay }}
-      style={{ position: "absolute", fontSize: "1.4rem", color: "rgba(230,34,140,0.5)", pointerEvents: "none", ...style }}
+      style={{ position: "absolute", fontSize: "1.8rem", color: "rgba(255,90,180,0.85)", textShadow: "0 0 14px rgba(230,34,140,0.55)", pointerEvents: "none", ...style }}
+    >
+      {children}
+    </motion.span>
+  );
+}
+
+// ── Floating labelled bubble (like the hero pills) ───────────
+export function Badge({ children, style, delay = 0 }: { children: React.ReactNode; style?: React.CSSProperties; delay?: number }) {
+  return (
+    <motion.span
+      aria-hidden
+      animate={{ y: [0, -7, 0] }}
+      transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay }}
+      style={{ position: "absolute", background: "rgba(10,10,10,0.7)", border: "1px solid rgba(230,34,140,0.45)", borderRadius: "100px", padding: "0.32rem 0.85rem", fontSize: "0.66rem", letterSpacing: "0.1em", color: "rgba(255,255,255,0.82)", backdropFilter: "blur(8px)", whiteSpace: "nowrap", pointerEvents: "none", boxShadow: "0 0 18px rgba(230,34,140,0.18)", ...style }}
     >
       {children}
     </motion.span>
@@ -96,17 +110,27 @@ export function Equalizer({ style }: { style?: React.CSSProperties }) {
 }
 
 // ── Drop-in decorative layer for any section ─────────────────
-// Scatters orbs + notes near the edges (clear of centred text). Desktop only.
+// Glowing orbs, rising notes, an equalizer, and (on wide screens) a couple
+// of labelled party bubbles — all near the edges, clear of centred text.
 // The parent must be position:relative; overflow:hidden.
-export function FloatingDecor() {
+export function FloatingDecor({ labels = ["🎉 Party", "🍹 Playa"] }: { labels?: string[] }) {
   return (
-    <div aria-hidden className="hidden lg:block" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
-      <Orb style={{ top: "16%", left: "4%" }} delay={0} size={10} />
-      <Orb style={{ top: "68%", left: "7%" }} delay={1.4} size={7} />
-      <Note style={{ top: "58%", left: "3%" }} delay={2}>♪</Note>
-      <Orb style={{ top: "28%", right: "5%" }} delay={0.8} size={9} />
-      <Orb style={{ top: "78%", right: "8%" }} delay={2.2} size={12} />
-      <Note style={{ top: "38%", right: "4%" }} delay={3.5}>♫</Note>
-    </div>
+    <>
+      {/* Glowing orbs, notes, equalizer — from lg up */}
+      <div aria-hidden className="hidden lg:block" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+        <Orb style={{ top: "20%", left: "4%" }} delay={0} size={18} />
+        <Orb style={{ top: "70%", left: "8%" }} delay={1.4} size={13} />
+        <Orb style={{ top: "34%", right: "5%" }} delay={0.8} size={20} />
+        <Orb style={{ top: "80%", right: "9%" }} delay={2.2} size={15} />
+        <Note style={{ top: "62%", left: "5%" }} delay={0}>♪</Note>
+        <Note style={{ top: "46%", right: "7%" }} delay={2.6}>♫</Note>
+        <Equalizer style={{ top: "26%", right: "4%" }} />
+      </div>
+      {/* Labelled party bubbles — from xl up (need wider side margins) */}
+      <div aria-hidden className="hidden xl:block" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+        {labels[0] && <Badge style={{ top: "10%", left: "3%" }} delay={0}>{labels[0]}</Badge>}
+        {labels[1] && <Badge style={{ bottom: "10%", right: "3%" }} delay={1.1}>{labels[1]}</Badge>}
+      </div>
+    </>
   );
 }
