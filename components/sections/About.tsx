@@ -9,6 +9,7 @@ interface Block {
   label: string;
   headline: string;
   text: string;
+  imageSrc?: string;
 }
 
 const blocks: Block[] = [
@@ -16,16 +17,19 @@ const blocks: Block[] = [
     label: "Herkunft",
     headline: "This is Gladdy",
     text: "Gladdy kommt aus dem Ruhrpott – aus Mülheim an der Ruhr, mit Wurzeln im Rheinland und aufgewachsen im schönen Leverkusen. Genau diese Mischung macht ihn aus: die ehrliche, direkte Art des Ruhrgebiets kombiniert mit der offenen, lebensfrohen Mentalität des Rheinlands. In Leverkusen hat er gelernt, was Zusammenhalt, Herzlichkeit und echte Lebensfreude bedeuten – Werte, die er heute auf jede Bühne mitnimmt.",
+    imageSrc: "/gladdy-pose-crouch.png",
   },
   {
     label: "Der Traum",
     headline: "Der Traum",
     text: "Schon seit über 10 Jahren trägt Gladdy einen Traum in sich: selbst auf der Bühne zu stehen, die Musik aufzudrehen und diesen einen Moment zu erleben, wenn aus vielen Menschen eine einzige feiernde Gemeinschaft wird. Ein Moment, in dem der Alltag verschwindet und nur noch das Hier und Jetzt zählt. Denn genau darum geht es ihm. Er weiß, wie sich Stress, Druck und die täglichen Herausforderungen des Lebens anfühlen – und genau deshalb macht er Musik: um Menschen für ein paar Stunden all das vergessen zu lassen.",
+    imageSrc: "/gladdy-pose-fists.png",
   },
   {
     label: "Live",
     headline: "Auf der Bühne",
     text: "Wenn Gladdy die Bühne betritt, geht es nur noch um gute Stimmung, Freiheit und dieses besondere Gefühl, gemeinsam das Leben zu feiern. Dabei ist er keiner, der sich verstellt – authentisch, sympathisch und einfach der nette Typ von nebenan. Bei ihm fühlt sich niemand wie ein Zuschauer, sondern wie ein Teil der Party. Seine Shows stehen für Energie, Emotionen und pure Lebensfreude.",
+    imageSrc: "/gladdy-pose-peace.png",
   },
   {
     label: "Mission",
@@ -37,8 +41,6 @@ const blocks: Block[] = [
 function Block({ block, index }: { block: Block; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
-  // Even index (0,2) = headline left, text right
-  // Odd index  (1,3) = headline right, text left  → modifier class handles it
   const isOdd = index % 2 !== 0;
 
   return (
@@ -49,7 +51,7 @@ function Block({ block, index }: { block: Block; index: number }) {
       transition={{ duration: 0.7, delay: 0.1 }}
       className={`about-block${isOdd ? " about-block--odd" : ""}`}
     >
-      {/* Headline + number */}
+      {/* Headline + number + optional cutout image */}
       <div
         className="about-block__headline"
         style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}
@@ -90,6 +92,31 @@ function Block({ block, index }: { block: Block; index: number }) {
         >
           {block.headline}
         </h2>
+
+        {/* Cutout image — sits below the headline in its column */}
+        {block.imageSrc && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.35 }}
+            whileHover={{ y: -6, scale: 1.02 }}
+            style={{
+              position: "relative",
+              marginTop: "1.75rem",
+              height: "240px",
+              background: "radial-gradient(ellipse at 50% 100%, rgba(230,34,140,0.2) 0%, transparent 65%)",
+              filter: "drop-shadow(0 6px 20px rgba(230,34,140,0.28))",
+            }}
+          >
+            <Image
+              src={block.imageSrc}
+              alt="GLADDY"
+              fill
+              sizes="(max-width: 768px) 80vw, 340px"
+              style={{ objectFit: "contain", objectPosition: "bottom center" }}
+            />
+          </motion.div>
+        )}
       </div>
 
       {/* Text */}
@@ -135,24 +162,20 @@ export default function About() {
           <div style={{ width: "40px", height: "2px", background: "linear-gradient(90deg, #FF3D9A, #B01570)", marginBottom: "2rem" }} />
         </div>
 
-        {/* First 3 blocks as text-only */}
+        {/* Blocks 01–03 with inline cutout images */}
         {blocks.slice(0, 3).map((block, i) => (
           <Block key={block.headline} block={block} index={i} />
         ))}
 
-        {/* Last block: photo left + text right */}
+        {/* Block 04: full photo left + text right */}
         <motion.div
           initial={{ opacity: 0, y: 32 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.7 }}
-          style={{
-            gap: "3rem",
-            alignItems: "center",
-          }}
+          style={{ gap: "3rem", alignItems: "center" }}
           className="about-block"
         >
-          {/* Photo */}
           <div
             style={{
               position: "relative",
@@ -171,7 +194,6 @@ export default function About() {
               sizes="(max-width: 768px) 100vw, 500px"
               style={{ objectFit: "cover", objectPosition: "top center" }}
             />
-            {/* Pink glow overlay at bottom */}
             <div
               aria-hidden
               style={{
@@ -186,7 +208,6 @@ export default function About() {
             />
           </div>
 
-          {/* Text — last block */}
           <div>
             <div style={{ display: "flex", alignItems: "baseline", gap: "1rem", marginBottom: "1rem" }}>
               <span
@@ -236,43 +257,6 @@ export default function About() {
               {blocks[3].text}
             </p>
           </div>
-        </motion.div>
-
-        {/* Photo gallery — new cutouts */}
-        <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.7 }}
-          style={{ marginTop: "4.5rem", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "1.25rem" }}
-        >
-          {[
-            { src: "/gladdy-pose-crouch.png", pos: "bottom center" },
-            { src: "/gladdy-pose-fists.png", pos: "bottom center" },
-            { src: "/gladdy-pose-peace.png", pos: "bottom center" },
-          ].map((p) => (
-            <motion.div
-              key={p.src}
-              whileHover={{ y: -6 }}
-              transition={{ duration: 0.25 }}
-              style={{
-                position: "relative",
-                aspectRatio: "3/4",
-                borderRadius: "12px",
-                overflow: "hidden",
-                border: "1px solid rgba(230,34,140,0.25)",
-                background: "radial-gradient(ellipse at 50% 118%, rgba(230,34,140,0.3), var(--background) 68%)",
-              }}
-            >
-              <Image
-                src={p.src}
-                alt="GLADDY"
-                fill
-                sizes="(max-width: 768px) 50vw, 320px"
-                style={{ objectFit: "contain", objectPosition: p.pos }}
-              />
-            </motion.div>
-          ))}
         </motion.div>
       </div>
     </section>
