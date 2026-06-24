@@ -165,8 +165,8 @@ export default function About() {
             }}
           >
             <Image
-              src="/3.png"
-              alt="Gladdy – Bühnenshow"
+              src="/gladdy-pose-hips.png"
+              alt="Gladdy – Partyschlager-Künstler"
               fill
               sizes="(max-width: 768px) 100vw, 500px"
               style={{ objectFit: "cover", objectPosition: "top center" }}
@@ -236,6 +236,43 @@ export default function About() {
               {blocks[3].text}
             </p>
           </div>
+        </motion.div>
+
+        {/* Photo gallery — new cutouts */}
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.7 }}
+          style={{ marginTop: "4.5rem", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "1.25rem" }}
+        >
+          {[
+            { src: "/gladdy-pose-crouch.png", pos: "bottom center" },
+            { src: "/gladdy-pose-fists.png", pos: "bottom center" },
+            { src: "/gladdy-pose-peace.png", pos: "bottom center" },
+          ].map((p) => (
+            <motion.div
+              key={p.src}
+              whileHover={{ y: -6 }}
+              transition={{ duration: 0.25 }}
+              style={{
+                position: "relative",
+                aspectRatio: "3/4",
+                borderRadius: "12px",
+                overflow: "hidden",
+                border: "1px solid rgba(230,34,140,0.25)",
+                background: "radial-gradient(ellipse at 50% 118%, rgba(230,34,140,0.3), var(--background) 68%)",
+              }}
+            >
+              <Image
+                src={p.src}
+                alt="GLADDY"
+                fill
+                sizes="(max-width: 768px) 50vw, 320px"
+                style={{ objectFit: "contain", objectPosition: p.pos }}
+              />
+            </motion.div>
+          ))}
         </motion.div>
       </div>
     </section>
