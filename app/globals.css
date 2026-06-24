@@ -33,6 +33,8 @@ img {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
+  -webkit-touch-callout: none; /* iOS Safari: blocks long-press save */
+  pointer-events: none;        /* touch hits parent div, not the img element */
 }
 
 html {
