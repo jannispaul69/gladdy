@@ -58,6 +58,15 @@ function MerchCarouselCard({ product }: { product: Product }) {
 
   const [imgIdx, setImgIdx] = useState(0);
   const [visible, setVisible] = useState(true);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
+
+  function handleGlow(e: React.MouseEvent<HTMLDivElement>) {
+    const el = cardRef.current, g = glowRef.current;
+    if (!el || !g) return;
+    const r = el.getBoundingClientRect();
+    g.style.background = `radial-gradient(circle 240px at ${e.clientX - r.left}px ${e.clientY - r.top}px, rgba(230,34,140,0.22), transparent 65%)`;
+  }
 
   useEffect(() => {
     if (images.length <= 1) return;
@@ -73,8 +82,13 @@ function MerchCarouselCard({ product }: { product: Product }) {
 
   return (
     <div
+      ref={cardRef}
       className="merch-snap-card"
+      onMouseMove={handleGlow}
+      onMouseEnter={() => { if (glowRef.current) glowRef.current.style.opacity = "1"; }}
+      onMouseLeave={() => { if (glowRef.current) glowRef.current.style.opacity = "0"; }}
       style={{
+        position: "relative",
         flex: "0 0 260px",
         scrollSnapAlign: "start",
         background: "var(--surface)",
@@ -175,6 +189,9 @@ function MerchCarouselCard({ product }: { product: Product }) {
           </Link>
         </div>
       </div>
+
+      {/* Cursor spotlight glow */}
+      <div ref={glowRef} aria-hidden style={{ position: "absolute", inset: 0, opacity: 0, transition: "opacity 0.3s", pointerEvents: "none", zIndex: 4 }} />
     </div>
   );
 }

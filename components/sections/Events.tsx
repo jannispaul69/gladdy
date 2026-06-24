@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import type { EventItem } from "@/lib/types";
+import { FloatingDecor } from "@/components/Decor";
 
 const MONTHS_DE = ["JAN", "FEB", "MÄR", "APR", "MAI", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEZ"];
 
@@ -154,9 +155,10 @@ export default function Events({ events }: { events: EventItem[] }) {
     <section
       id="events"
       aria-label="Events und Termine"
-      style={{ background: "var(--background)", padding: "6rem 1.5rem" }}
+      style={{ background: "var(--background)", padding: "6rem 1.5rem", position: "relative", overflow: "hidden" }}
     >
-      <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+      <FloatingDecor />
+      <div style={{ maxWidth: "900px", margin: "0 auto", position: "relative", zIndex: 1 }}>
         {/* Header */}
         <motion.div
           ref={headRef}

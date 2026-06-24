@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
+import { FloatingDecor } from "@/components/Decor";
 
 interface Block {
   label: string;
@@ -113,9 +114,10 @@ export default function About() {
     <section
       id="ueber"
       aria-label="Über mich"
-      style={{ background: "var(--surface)", padding: "6rem 1.5rem" }}
+      style={{ background: "var(--surface)", padding: "6rem 1.5rem", position: "relative", overflow: "hidden" }}
     >
-      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+      <FloatingDecor />
+      <div style={{ maxWidth: "1100px", margin: "0 auto", position: "relative", zIndex: 1 }}>
         {/* Section header */}
         <div style={{ marginBottom: "1rem" }}>
           <p
