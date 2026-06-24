@@ -131,6 +131,13 @@ export function FloatingDecor({ labels = ["🎉 Party", "🍹 Playa"] }: { label
         {labels[0] && <Badge style={{ top: "10%", left: "3%" }} delay={0}>{labels[0]}</Badge>}
         {labels[1] && <Badge style={{ bottom: "10%", right: "3%" }} delay={1.1}>{labels[1]}</Badge>}
       </div>
+      {/* Mobile / tablet: small glowing orbs tucked into the side gutters */}
+      <div aria-hidden className="lg:hidden" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+        <Orb style={{ top: "11%", left: "2.5%" }} delay={0} size={9} />
+        <Orb style={{ top: "85%", right: "2.5%" }} delay={1.3} size={9} />
+        <Orb style={{ top: "50%", left: "2%" }} delay={0.7} size={6} />
+        <Orb style={{ top: "38%", right: "2.5%" }} delay={2} size={7} />
+      </div>
     </>
   );
 }
