@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import CookieBanner from "@/components/CookieBanner";
 import BookingModal from "@/components/BookingModal";
 import { BookingModalProvider } from "@/context/booking-modal";
+import ImageProtection from "@/components/ImageProtection";
 import "./globals.css";
 
 const anton = Anton({
@@ -54,6 +55,7 @@ export default function RootLayout({
           {children}
           <BookingModal />
           <CookieBanner />
+          <ImageProtection />
         </BookingModalProvider>
         <Analytics />
       </body>

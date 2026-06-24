@@ -28,6 +28,13 @@
   box-sizing: border-box;
 }
 
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+
 html {
   scroll-behavior: smooth;
 }
