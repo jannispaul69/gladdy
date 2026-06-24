@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { useBookingModal } from "@/context/booking-modal";
 import { FloatingDecor } from "@/components/Decor";
@@ -43,24 +44,38 @@ export default function Booking() {
 
       <div style={{ maxWidth: "1100px", margin: "0 auto", position: "relative", zIndex: 1 }}>
 
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          style={{ textAlign: "center", marginBottom: "4rem" }}
-        >
-          <p style={{ fontSize: "0.65rem", letterSpacing: "0.22em", color: "var(--primary)", textTransform: "uppercase", fontWeight: 500, marginBottom: "1rem" }}>
-            Booking & Kontakt
-          </p>
-          <h2 style={{ fontFamily: "var(--font-anton)", fontSize: "clamp(2.5rem, 7vw, 5rem)", letterSpacing: "0.05em", color: "#fff", lineHeight: 1, WebkitTextStroke: "1.5px var(--primary)", textShadow: "0 0 50px rgba(230,34,140,0.3)", marginBottom: "1.25rem" }}>
-            GLADDY BUCHEN
-          </h2>
-          <p style={{ color: "rgba(255,255,255,0.5)", maxWidth: "560px", margin: "0 auto", lineHeight: 1.75, fontSize: "0.97rem" }}>
-            Perfekte Stimmung für jede Veranstaltung — von der kleinen Vereinsfeier bis zum großen Festival. Jetzt Anfrage stellen und freie Termine erfragen.
-          </p>
-        </motion.div>
+        {/* Header + pointing figure */}
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: "2.5rem", marginBottom: "4rem" }}>
+          <motion.div
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            style={{ flex: "1 1 420px", minWidth: 0, textAlign: "center" }}
+          >
+            <p style={{ fontSize: "0.65rem", letterSpacing: "0.22em", color: "var(--primary)", textTransform: "uppercase", fontWeight: 500, marginBottom: "1rem" }}>
+              Booking & Kontakt
+            </p>
+            <h2 style={{ fontFamily: "var(--font-anton)", fontSize: "clamp(2.5rem, 7vw, 5rem)", letterSpacing: "0.05em", color: "#fff", lineHeight: 1, WebkitTextStroke: "1.5px var(--primary)", textShadow: "0 0 50px rgba(230,34,140,0.3)", marginBottom: "1.25rem" }}>
+              GLADDY BUCHEN
+            </h2>
+            <p style={{ color: "rgba(255,255,255,0.5)", maxWidth: "560px", margin: "0 auto", lineHeight: 1.75, fontSize: "0.97rem" }}>
+              Perfekte Stimmung für jede Veranstaltung — von der kleinen Vereinsfeier bis zum großen Festival. Jetzt Anfrage stellen und freie Termine erfragen.
+            </p>
+          </motion.div>
+
+          {/* Pointing figure — desktop only */}
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="hidden lg:block"
+            style={{ flex: "0 0 230px", position: "relative", height: "340px", filter: "drop-shadow(0 10px 30px rgba(230,34,140,0.4))" }}
+          >
+            <Image src="/gladdy-pose-pointing.png" alt="GLADDY zeigt auf dich" fill sizes="230px" style={{ objectFit: "contain", objectPosition: "bottom center" }} />
+          </motion.div>
+        </div>
 
         {/* Event type grid */}
         <motion.div
