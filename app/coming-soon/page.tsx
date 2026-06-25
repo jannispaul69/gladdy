@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
+// Launch: Sunday June 28, 2026 at 18:00 CEST
 const LAUNCH_TIME = new Date("2026-06-28T18:00:00+02:00").getTime();
 
 interface TimeLeft {
@@ -22,31 +25,128 @@ function getTimeLeft(): TimeLeft {
   };
 }
 
+// Canvas beam background (same technique as hero)
+function BeamCanvas() {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const dpr = window.devicePixelRatio || 1;
+    let animId: number;
+
+    const PALETTE = [
+      [230, 34, 140],
+      [255, 61, 154],
+      [176, 21, 112],
+      [200, 40, 160],
+      [255, 100, 180],
+      [140, 20, 100],
+    ];
+
+    const beams = Array.from({ length: 14 }, (_, i) => ({
+      angle: (i / 14) * Math.PI * 2,
+      speed: 0.0003 + Math.random() * 0.0004,
+      width: 0.06 + Math.random() * 0.1,
+      color: PALETTE[i % PALETTE.length],
+      alpha: 0.12 + Math.random() * 0.14,
+    }));
+
+    function resize() {
+      if (!canvas) return;
+      canvas.width = canvas.offsetWidth * dpr;
+      canvas.height = canvas.offsetHeight * dpr;
+      ctx!.scale(dpr, dpr);
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function draw(t: number) {
+      if (!canvas || !ctx) return;
+      const W = canvas.offsetWidth;
+      const H = canvas.offsetHeight;
+      ctx.clearRect(0, 0, W, H);
+
+      const ox = W * 0.5;
+      const oy = H * 0.75;
+      const R = Math.max(W, H) * 1.4;
+
+      beams.forEach((b) => {
+        const a = reduced ? b.angle : b.angle + t * b.speed;
+        const x1 = ox + Math.cos(a - b.width / 2) * R;
+        const y1 = oy + Math.sin(a - b.width / 2) * R;
+        const x2 = ox + Math.cos(a + b.width / 2) * R;
+        const y2 = oy + Math.sin(a + b.width / 2) * R;
+
+        ctx.beginPath();
+        ctx.moveTo(ox, oy);
+        ctx.lineTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.closePath();
+
+        const grad = ctx.createRadialGradient(ox, oy, 0, ox, oy, R * 0.7);
+        grad.addColorStop(0, `rgba(${b.color},${b.alpha * 1.8})`);
+        grad.addColorStop(0.5, `rgba(${b.color},${b.alpha * 0.6})`);
+        grad.addColorStop(1, `rgba(${b.color},0)`);
+        ctx.fillStyle = grad;
+        ctx.globalCompositeOperation = "lighter";
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+      });
+
+      // Central bloom
+      const bloom = ctx.createRadialGradient(ox, oy, 0, ox, oy, W * 0.4);
+      bloom.addColorStop(0, "rgba(230,34,140,0.22)");
+      bloom.addColorStop(0.4, "rgba(176,21,112,0.08)");
+      bloom.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = bloom;
+      ctx.fillRect(0, 0, W, H);
+
+      animId = requestAnimationFrame(draw);
+    }
+    animId = requestAnimationFrame(draw);
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+  return (
+    <canvas
+      ref={ref}
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.9 }}
+    />
+  );
+}
+
 function Digit({ value, label }: { value: number; label: string }) {
   const str = String(value).padStart(2, "0");
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.4rem" }}>
       <div
         style={{
           background: "rgba(230,34,140,0.08)",
-          border: "1px solid rgba(230,34,140,0.25)",
-          borderRadius: "12px",
-          padding: "1.25rem 1.5rem",
-          minWidth: "clamp(72px, 16vw, 110px)",
+          border: "1px solid rgba(230,34,140,0.3)",
+          borderRadius: "10px",
+          padding: "clamp(0.75rem,2vw,1.25rem) clamp(0.875rem,2.5vw,1.5rem)",
+          minWidth: "clamp(58px, 14vw, 100px)",
           textAlign: "center",
           backdropFilter: "blur(8px)",
-          boxShadow: "0 0 30px rgba(230,34,140,0.12), inset 0 1px 0 rgba(255,255,255,0.05)",
+          boxShadow: "0 0 24px rgba(230,34,140,0.15), inset 0 1px 0 rgba(255,255,255,0.06)",
         }}
       >
         <span
           style={{
             fontFamily: "var(--font-anton)",
-            fontSize: "clamp(2.5rem, 8vw, 4.5rem)",
+            fontSize: "clamp(1.75rem, 6vw, 4rem)",
             letterSpacing: "0.04em",
             lineHeight: 1,
             background: "linear-gradient(135deg, #FF3D9A 0%, #E6228C 50%, #B01570 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
+            display: "block",
           }}
         >
           {str}
@@ -54,9 +154,9 @@ function Digit({ value, label }: { value: number; label: string }) {
       </div>
       <span
         style={{
-          fontSize: "0.6rem",
-          letterSpacing: "0.2em",
-          color: "rgba(255,255,255,0.35)",
+          fontSize: "0.55rem",
+          letterSpacing: "0.18em",
+          color: "rgba(255,255,255,0.3)",
           textTransform: "uppercase",
           fontWeight: 500,
         }}
@@ -78,7 +178,6 @@ export default function ComingSoon() {
       if (t.tage === 0 && t.stunden === 0 && t.minuten === 0 && t.sekunden === 0) {
         setLaunched(true);
         clearInterval(tick);
-        // Reload after short delay — middleware now lets the request through
         setTimeout(() => window.location.reload(), 1500);
       }
     }, 1000);
@@ -86,100 +185,166 @@ export default function ComingSoon() {
   }, []);
 
   return (
-    <main
+    <div
       style={{
         minHeight: "100vh",
         background: "#0A0A0A",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "2rem 1.5rem",
         position: "relative",
         overflow: "hidden",
       }}
     >
-      {/* Background glows */}
-      <div aria-hidden style={{ position: "absolute", top: "10%", left: "50%", transform: "translateX(-50%)", width: "60vw", height: "50vh", background: "radial-gradient(ellipse, rgba(230,34,140,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
-      <div aria-hidden style={{ position: "absolute", bottom: 0, left: "20%", width: "40vw", height: "40vh", background: "radial-gradient(ellipse, rgba(176,21,112,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
+      {/* Animated beam background */}
+      <BeamCanvas />
 
-      {/* Logo */}
-      <div style={{ position: "relative", width: 80, height: 80, marginBottom: "2.5rem" }}>
-        <Image src="/gladdy-logo.png" alt="GLADDY" fill sizes="80px" style={{ objectFit: "contain" }} />
-      </div>
+      {/* Bottom fade to black */}
+      <div aria-hidden style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "30%", background: "linear-gradient(to bottom, transparent, #0A0A0A)", zIndex: 1, pointerEvents: "none" }} />
 
-      {/* Eyebrow */}
-      <p
+      {/* Main content area */}
+      <main
         style={{
-          fontSize: "0.65rem",
-          letterSpacing: "0.25em",
-          color: "var(--primary, #E6228C)",
-          textTransform: "uppercase",
-          fontWeight: 500,
-          marginBottom: "1rem",
+          flex: 1,
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+          zIndex: 2,
+          padding: "2rem 1.5rem",
+          gap: "clamp(1rem, 4vw, 4rem)",
+          flexWrap: "wrap",
         }}
       >
-        Neue Website
-      </p>
+        {/* Left: Text content */}
+        <motion.div
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          style={{
+            flex: "1 1 320px",
+            maxWidth: "560px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+          }}
+        >
+          {/* Logo */}
+          <div style={{ position: "relative", width: 64, height: 64, marginBottom: "2rem" }}>
+            <Image src="/gladdy-logo.png" alt="GLADDY" fill sizes="64px" style={{ objectFit: "contain" }} />
+          </div>
 
-      {/* Headline */}
-      <h1
+          {/* Eyebrow */}
+          <p style={{ fontSize: "0.6rem", letterSpacing: "0.25em", color: "#E6228C", textTransform: "uppercase", fontWeight: 500, marginBottom: "1rem" }}>
+            Neue Website
+          </p>
+
+          {/* Headline */}
+          <h1
+            style={{
+              fontFamily: "var(--font-anton)",
+              fontSize: "clamp(3.5rem, 10vw, 7rem)",
+              letterSpacing: "0.04em",
+              lineHeight: 0.92,
+              color: "#fff",
+              marginBottom: "0.75rem",
+              WebkitTextStroke: "1.5px rgba(230,34,140,0.5)",
+            }}
+          >
+            COMING<br />SOON
+          </h1>
+
+          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "clamp(0.85rem, 2vw, 1rem)", marginBottom: "2.5rem", lineHeight: 1.6, letterSpacing: "0.02em" }}>
+            {launched
+              ? "🎉 Die Party beginnt — wird geladen …"
+              : "Sonntag · 18:00 Uhr · gladdy-offiziell.de"}
+          </p>
+
+          {/* Countdown */}
+          {!launched && (
+            <div style={{ display: "flex", gap: "clamp(0.4rem, 1.5vw, 0.875rem)", alignItems: "flex-start", marginBottom: "3rem" }}>
+              <Digit value={timeLeft.tage} label="Tage" />
+              <span style={{ fontFamily: "var(--font-anton)", fontSize: "clamp(1.5rem, 4vw, 3rem)", color: "rgba(230,34,140,0.4)", marginTop: "0.6rem", lineHeight: 1 }}>:</span>
+              <Digit value={timeLeft.stunden} label="Std" />
+              <span style={{ fontFamily: "var(--font-anton)", fontSize: "clamp(1.5rem, 4vw, 3rem)", color: "rgba(230,34,140,0.4)", marginTop: "0.6rem", lineHeight: 1 }}>:</span>
+              <Digit value={timeLeft.minuten} label="Min" />
+              <span style={{ fontFamily: "var(--font-anton)", fontSize: "clamp(1.5rem, 4vw, 3rem)", color: "rgba(230,34,140,0.4)", marginTop: "0.6rem", lineHeight: 1 }}>:</span>
+              <Digit value={timeLeft.sekunden} label="Sek" />
+            </div>
+          )}
+
+          {/* Teaser */}
+          <p style={{ color: "rgba(255,255,255,0.22)", fontSize: "0.8rem", lineHeight: 1.7, letterSpacing: "0.02em", maxWidth: "380px" }}>
+            Partyschlager. Eskalation. Pure Lebensfreude.<br />
+            Bald hier. Für immer auf der Playa.
+          </p>
+        </motion.div>
+
+        {/* Right: Gladdy figure */}
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.9, ease: "easeOut", delay: 0.15 }}
+          style={{
+            flex: "0 1 auto",
+            position: "relative",
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            alignSelf: "flex-end",
+          }}
+        >
+          <motion.div
+            animate={{ y: [0, -12, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            style={{
+              position: "relative",
+              width: "clamp(200px, 30vw, 420px)",
+              height: "clamp(280px, 42vw, 590px)",
+              filter: "drop-shadow(0 0 40px rgba(230,34,140,0.45)) drop-shadow(0 20px 60px rgba(176,21,112,0.3))",
+            }}
+          >
+            <Image
+              src="/gladdy-figure.png"
+              alt="GLADDY"
+              fill
+              sizes="(max-width: 768px) 60vw, 420px"
+              style={{ objectFit: "contain", objectPosition: "bottom center" }}
+              priority
+            />
+          </motion.div>
+        </motion.div>
+      </main>
+
+      {/* Footer: legal links */}
+      <footer
         style={{
-          fontFamily: "var(--font-anton)",
-          fontSize: "clamp(3rem, 12vw, 7rem)",
-          letterSpacing: "0.05em",
-          lineHeight: 0.95,
-          color: "#fff",
+          position: "relative",
+          zIndex: 2,
           textAlign: "center",
-          marginBottom: "0.5rem",
-          WebkitTextStroke: "1.5px rgba(230,34,140,0.6)",
+          padding: "1.25rem 1.5rem 1.75rem",
+          display: "flex",
+          gap: "1.5rem",
+          justifyContent: "center",
+          flexWrap: "wrap",
         }}
       >
-        COMING SOON
-      </h1>
-
-      <p
-        style={{
-          color: "rgba(255,255,255,0.4)",
-          fontSize: "clamp(0.9rem, 2.5vw, 1.05rem)",
-          marginBottom: "3.5rem",
-          textAlign: "center",
-          letterSpacing: "0.04em",
-        }}
-      >
-        {launched ? "🎉 Es geht los — wird geladen …" : "Die Party startet am Sonntag um 18:00 Uhr"}
-      </p>
-
-      {/* Countdown */}
-      {!launched && (
-        <div style={{ display: "flex", gap: "clamp(0.5rem, 2.5vw, 1.5rem)", alignItems: "flex-start", marginBottom: "4rem" }}>
-          <Digit value={timeLeft.tage} label="Tage" />
-          <span style={{ fontFamily: "var(--font-anton)", fontSize: "clamp(2rem, 6vw, 3.5rem)", color: "rgba(230,34,140,0.4)", marginTop: "0.75rem", lineHeight: 1 }}>:</span>
-          <Digit value={timeLeft.stunden} label="Stunden" />
-          <span style={{ fontFamily: "var(--font-anton)", fontSize: "clamp(2rem, 6vw, 3.5rem)", color: "rgba(230,34,140,0.4)", marginTop: "0.75rem", lineHeight: 1 }}>:</span>
-          <Digit value={timeLeft.minuten} label="Minuten" />
-          <span style={{ fontFamily: "var(--font-anton)", fontSize: "clamp(2rem, 6vw, 3.5rem)", color: "rgba(230,34,140,0.4)", marginTop: "0.75rem", lineHeight: 1 }}>:</span>
-          <Digit value={timeLeft.sekunden} label="Sekunden" />
-        </div>
-      )}
-
-      {/* Divider */}
-      <div style={{ width: "40px", height: "2px", background: "linear-gradient(90deg, #FF3D9A, #B01570)", marginBottom: "2rem" }} />
-
-      {/* Teaser */}
-      <p
-        style={{
-          color: "rgba(255,255,255,0.25)",
-          fontSize: "0.85rem",
-          textAlign: "center",
-          maxWidth: "380px",
-          lineHeight: 1.7,
-          letterSpacing: "0.02em",
-        }}
-      >
-        Partyschlager. Eskalation. Pure Lebensfreude.<br />
-        Bald hier. Für immer auf der Playa.
-      </p>
-    </main>
+        {[
+          { href: "/impressum", label: "Impressum" },
+          { href: "/datenschutz", label: "Datenschutz" },
+          { href: "/agb", label: "AGB" },
+        ].map((l) => (
+          <Link
+            key={l.href}
+            href={l.href}
+            style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.72rem", letterSpacing: "0.06em", textDecoration: "none", transition: "color 0.2s" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#E6228C")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.2)")}
+          >
+            {l.label}
+          </Link>
+        ))}
+      </footer>
+    </div>
   );
 }

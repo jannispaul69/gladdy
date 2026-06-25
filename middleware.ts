@@ -18,8 +18,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Coming-soon page and API routes always pass through
-  if (pathname.startsWith("/coming-soon") || pathname.startsWith("/api")) {
+  // Always accessible: coming-soon, API, and legally required pages (DE: TMG/DSGVO)
+  if (
+    pathname.startsWith("/coming-soon") ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/impressum") ||
+    pathname.startsWith("/datenschutz") ||
+    pathname.startsWith("/agb")
+  ) {
     return NextResponse.next();
   }
 
