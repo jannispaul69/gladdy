@@ -21,24 +21,24 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "GLADDY | Partyschlager & an der Playa",
+  title: "GLADDY | Partystimmung & Abriss für Festivals, Clubs & Events!",
   description:
-    "GLADDY – Partyschlager-Künstler für unvergessliche Events, Bühnen und Feiern. Jetzt buchen!",
+    "GLADDY – Partyschlager-Künstler für unvergessliche Festivals, Clubs & Events. Echte Stimmung, echte Energie. Jetzt buchen!",
   icons: {
     icon: [{ url: "/favicon.png", type: "image/png" }],
     apple: [{ url: "/favicon.png" }],
   },
   openGraph: {
-    title: "GLADDY | Partyschlager & an der Playa",
-    description: "Partyschlager & an der Playa — Hol dir die Party auf deine Bühne.",
+    title: "GLADDY | Partystimmung & Abriss für Festivals, Clubs & Events!",
+    description: "Partyschlager & Abriss — Hol dir die Party auf deine Bühne. Jetzt buchen!",
     type: "website",
-    images: [{ url: "/og-image.png", width: 1080, height: 1350, alt: "GLADDY" }],
+    images: [{ url: "/Titelbild.png", width: 1080, height: 1350, alt: "GLADDY" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "GLADDY | Partyschlager & an der Playa",
-    description: "Partyschlager & an der Playa — Jetzt buchen!",
-    images: ["/og-image.png"],
+    title: "GLADDY | Partystimmung & Abriss für Festivals, Clubs & Events!",
+    description: "Partyschlager & Abriss — Jetzt buchen!",
+    images: ["/Titelbild.png"],
   },
   metadataBase: new URL("https://gladdy-offiziell.de"),
 };
