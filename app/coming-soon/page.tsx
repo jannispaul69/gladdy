@@ -275,8 +275,8 @@ export default function ComingSoon() {
 
           {/* Teaser */}
           <p style={{ color: "rgba(255,255,255,0.22)", fontSize: "0.8rem", lineHeight: 1.7, letterSpacing: "0.02em", maxWidth: "380px" }}>
-            Partyschlager. Eskalation. Pure Lebensfreude.<br />
-            Bald hier. Für immer auf der Playa.
+            Die Party kommt zu dir — Sonntag, 18:00 Uhr.<br />
+            Sei dabei. Für immer auf der Playa.
           </p>
         </motion.div>
 
