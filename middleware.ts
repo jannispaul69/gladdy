@@ -29,8 +29,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Before launch → show coming soon (URL stays clean via rewrite)
+  // Before launch → show coming soon, unless admin is logged in (preview mode)
   if (Date.now() < LAUNCH_TIME) {
+    const token = request.cookies.get("gladdy_admin")?.value;
+    const expected = process.env.ADMIN_SESSION_TOKEN;
+    if (expected && token === expected) {
+      return NextResponse.next();
+    }
     return NextResponse.rewrite(new URL("/coming-soon", request.url));
   }
 
