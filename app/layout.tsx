@@ -32,13 +32,13 @@ export const metadata: Metadata = {
     title: "GLADDY | Partystimmung & Abriss für Festivals, Clubs & Events!",
     description: "Partyschlager & Abriss — Hol dir die Party auf deine Bühne. Jetzt buchen!",
     type: "website",
-    images: [{ url: "/Titelbild.png", width: 1080, height: 1350, alt: "GLADDY" }],
+    images: [{ url: "/og-gladdy.png", width: 1080, height: 1625, alt: "GLADDY" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "GLADDY | Partystimmung & Abriss für Festivals, Clubs & Events!",
     description: "Partyschlager & Abriss — Jetzt buchen!",
-    images: ["/Titelbild.png"],
+    images: ["/og-gladdy.png"],
   },
   metadataBase: new URL("https://gladdy-offiziell.de"),
 };
