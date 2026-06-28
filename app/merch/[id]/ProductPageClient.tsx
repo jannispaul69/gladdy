@@ -41,30 +41,32 @@ function formatPrice(cents: number) {
   return `€ ${(cents / 100).toFixed(2).replace(".", ",")}`;
 }
 
-function getShirtImage(imageUrl: string | null, color: ColorId, side: ShirtSide): string {
-  const gender = imageUrl?.includes("women") ? "women" : "men";
+function getShirtImage(imageUrl: string | null, title: string, color: ColorId, side: ShirtSide): string {
+  const src = `${imageUrl ?? ""}${title}`.toLowerCase();
+  const gender = src.includes("women") || src.includes("damen") ? "women" : "men";
   return `/products/shirt-${gender}-${color}-${side}.png`;
 }
 
-function getMugImage(imageUrl: string | null, angle: MugAngle): string {
-  const type = imageUrl?.includes("herztasse") ? "herztasse" : "tasse";
+function getMugImage(imageUrl: string | null, title: string, angle: MugAngle): string {
+  const src = `${imageUrl ?? ""}${title}`.toLowerCase();
+  const type = src.includes("herztasse") || src.includes("herz") ? "herztasse" : "tasse";
   return `/products/${type}-${angle}.png`;
 }
 
 type ThumbEntry = { src: string; label: string };
 
-function buildShirtThumbs(imageUrl: string | null, color: ColorId): ThumbEntry[] {
+function buildShirtThumbs(imageUrl: string | null, title: string, color: ColorId): ThumbEntry[] {
   return [
-    { src: getShirtImage(imageUrl, color, "front"), label: "Vorne" },
-    { src: getShirtImage(imageUrl, color, "back"),  label: "Hinten" },
+    { src: getShirtImage(imageUrl, title, color, "front"), label: "Vorne" },
+    { src: getShirtImage(imageUrl, title, color, "back"),  label: "Hinten" },
   ];
 }
 
-function buildMugThumbs(imageUrl: string | null): ThumbEntry[] {
+function buildMugThumbs(imageUrl: string | null, title: string): ThumbEntry[] {
   return [
-    { src: getMugImage(imageUrl, "front"), label: "Vorne" },
-    { src: getMugImage(imageUrl, "left"),  label: "Links" },
-    { src: getMugImage(imageUrl, "right"), label: "Rechts" },
+    { src: getMugImage(imageUrl, title, "front"), label: "Vorne" },
+    { src: getMugImage(imageUrl, title, "left"),  label: "Links" },
+    { src: getMugImage(imageUrl, title, "right"), label: "Rechts" },
   ];
 }
 
@@ -271,9 +273,9 @@ export default function ProductPageClient({ product, shopEnabled = false, testMo
   const categoryLabel = CATEGORY_LABELS[product.category] ?? "Merch";
 
   const thumbs: ThumbEntry[] = isShirt
-    ? buildShirtThumbs(product.image_url, selectedColor)
+    ? buildShirtThumbs(product.image_url, product.title, selectedColor)
     : isMug
-    ? buildMugThumbs(product.image_url)
+    ? buildMugThumbs(product.image_url, product.title)
     : [{ src: product.image_url ?? "/gladdy-logo.png", label: product.title }];
 
   const clampedThumb = Math.min(activeThumb, thumbs.length - 1);
