@@ -78,6 +78,7 @@ export async function POST(req: NextRequest) {
         },
       },
     ],
+    allow_promotion_codes: true,
     metadata: { source: "gladdy-merch" },
     payment_intent_data: {
       description: "GLADDY Merch Shop",
