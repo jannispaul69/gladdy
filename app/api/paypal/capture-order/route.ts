@@ -71,20 +71,33 @@ export async function POST(req: NextRequest) {
       payer: { email_address: string; name: { given_name: string; surname: string } };
     };
 
-    // Persist order in DB if capture succeeded
+    // Persist order in DB only after confirmed payment
     if (capture.status === "COMPLETED") {
       try {
         const { getSupabaseAdmin } = await import("@/lib/supabase-admin");
         const supabase = getSupabaseAdmin();
         const unit = capture.purchase_units[0];
+        const captureId = unit?.payments.captures[0]?.id ?? null;
         const capturedAmount = unit?.payments.captures[0]?.amount.value ?? "0";
+
+        // Idempotency: skip if this PayPal capture already has an order
+        if (captureId) {
+          const { data: existing } = await supabase
+            .from("orders")
+            .select("id")
+            .eq("stripe_payment_intent_id", captureId)
+            .maybeSingle();
+          if (existing) {
+            return NextResponse.json({ status: capture.status, orderId: capture.id });
+          }
+        }
 
         await supabase.from("orders").insert({
           customer_email: capture.payer?.email_address ?? "",
           customer_name: `${capture.payer?.name?.given_name ?? ""} ${capture.payer?.name?.surname ?? ""}`.trim(),
           total_cents: Math.round(parseFloat(capturedAmount) * 100),
           status: "paid",
-          stripe_payment_intent_id: null,
+          stripe_payment_intent_id: captureId,
           items: capture.purchase_units,
         });
       } catch (dbErr) {

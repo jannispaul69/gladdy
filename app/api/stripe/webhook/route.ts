@@ -52,8 +52,22 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.Session) {
+  // Only proceed when payment is actually confirmed (guards async methods like SEPA)
+  if (session.payment_status !== "paid") return;
+
   const { getSupabaseAdmin } = await import("@/lib/supabase-admin");
   const supabase = getSupabaseAdmin();
+
+  // Idempotency: skip if this payment intent already has an order in DB
+  const paymentIntentId = session.payment_intent as string | null;
+  if (paymentIntentId) {
+    const { data: existing } = await supabase
+      .from("orders")
+      .select("id")
+      .eq("stripe_payment_intent_id", paymentIntentId)
+      .maybeSingle();
+    if (existing) return;
+  }
 
   const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 50 });
   const addr = session.collected_information?.shipping_details?.address ?? session.customer_details?.address ?? null;
