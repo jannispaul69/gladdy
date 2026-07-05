@@ -349,9 +349,26 @@ export default function OrderDetailClient({
             </div>
           </>
         ) : (
-          <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.3)" }}>
-            Noch keine Rechnung vorhanden.
-          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.3)", margin: 0 }}>
+              Noch keine Rechnung vorhanden.
+            </p>
+            <button
+              onClick={handleSendInvoice}
+              disabled={sendingInvoice || !customerEmail}
+              style={{
+                display: "flex", alignItems: "center", gap: "0.5rem",
+                padding: "0.6rem 1rem", borderRadius: "7px", fontSize: "0.78rem",
+                fontWeight: 600, cursor: sendingInvoice ? "wait" : "pointer", fontFamily: "inherit",
+                background: "rgba(230,34,140,0.12)", border: "1px solid rgba(230,34,140,0.25)",
+                color: "var(--primary)", textAlign: "left", transition: "all 0.15s",
+                opacity: sendingInvoice ? 0.6 : 1,
+              }}
+            >
+              <Mail size={13} strokeWidth={1.75} />
+              {sendingInvoice ? "Wird erstellt …" : "Rechnung erstellen & senden"}
+            </button>
+          </div>
         )}
       </div>
 
