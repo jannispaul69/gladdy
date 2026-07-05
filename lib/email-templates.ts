@@ -416,6 +416,29 @@ export function documentEmailHtml({
   `);
 }
 
+export function shopLaunchEmailHtml({ shopUrl }: { shopUrl: string }) {
+  return wrap(`
+    <p style="margin:0 0 6px;">${badge("Shop ist live")}</p>
+
+    <h1 style="font-size:22px;font-weight:800;color:#fff;margin:16px 0 8px;line-height:1.3;">
+      Der GLADDY Shop ist jetzt live! 🎉
+    </h1>
+    <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.75;margin:0 0 28px;">
+      Danke, dass du dich auf die Warteliste eingetragen hast — jetzt geht's los. Das offizielle GLADDY Party Crew Merch ist ab sofort bestellbar.
+    </p>
+
+    <div style="text-align:center;margin-bottom:28px;">
+      ${pinkButton("Jetzt zum Shop →", shopUrl)}
+    </div>
+
+    ${divider()}
+
+    <p style="font-size:13px;color:rgba(255,255,255,0.3);margin:0;line-height:1.7;">
+      Bei Rückfragen antworten Sie einfach auf diese E-Mail.
+    </p>
+  `);
+}
+
 export function orderInvoiceEmailHtml({
   customerName, invoiceNumber, totalCents,
 }: {

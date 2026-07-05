@@ -1,4 +1,5 @@
 import ConfirmDelete from "./ConfirmDelete";
+import SendLaunchEmailButton from "./SendLaunchEmailButton";
 import { Bell, Download } from "lucide-react";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
@@ -43,13 +44,16 @@ export default async function WaitlistPage() {
           </div>
           <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.85rem" }}>Shop-Launch E-Mails</p>
         </div>
-        {entries.length > 0 && (
-          <a href={`data:text/csv;charset=utf-8,Email,Datum,Quelle\n${entries.map(e => `${e.email},${e.created_at},${e.source}`).join("\n")}`}
-            download="GLADDY_Warteliste.csv"
-            style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.55rem 1.1rem", background: "rgba(230,34,140,0.1)", border: "1px solid rgba(230,34,140,0.25)", borderRadius: "6px", color: "var(--primary)", textDecoration: "none", fontSize: "0.8rem", letterSpacing: "0.04em" }}>
-            <Download size={14} strokeWidth={1.75} /> CSV Export
-          </a>
-        )}
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", flexWrap: "wrap" }}>
+          {entries.length > 0 && (
+            <a href={`data:text/csv;charset=utf-8,Email,Datum,Quelle\n${entries.map(e => `${e.email},${e.created_at},${e.source}`).join("\n")}`}
+              download="GLADDY_Warteliste.csv"
+              style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.55rem 1.1rem", background: "rgba(230,34,140,0.1)", border: "1px solid rgba(230,34,140,0.25)", borderRadius: "6px", color: "var(--primary)", textDecoration: "none", fontSize: "0.8rem", letterSpacing: "0.04em" }}>
+              <Download size={14} strokeWidth={1.75} /> CSV Export
+            </a>
+          )}
+          <SendLaunchEmailButton disabled={entries.length === 0} />
+        </div>
       </div>
 
       {/* Stats */}
