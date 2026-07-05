@@ -16,6 +16,7 @@ export type Product = {
   stock_quantity: number;
   material?: string | null;
   care_instructions?: string | null;
+  images?: { url: string; label: string }[] | null;
 };
 
 function formatPrice(cents: number) {
@@ -49,6 +50,9 @@ function getCardImages(product: Product): string[] {
       `/products/${base}-left.png`,
       `/products/${base}-right.png`,
     ];
+  }
+  if (product.images && product.images.length > 0) {
+    return product.images.map((img) => img.url);
   }
   return [product.image_url ?? "/gladdy-logo.png"];
 }

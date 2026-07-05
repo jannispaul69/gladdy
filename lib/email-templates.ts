@@ -415,3 +415,43 @@ export function documentEmailHtml({
     </p>
   `);
 }
+
+export function orderInvoiceEmailHtml({
+  customerName, invoiceNumber, totalCents,
+}: {
+  customerName: string;
+  invoiceNumber: string;
+  totalCents: number;
+}) {
+  const firstName = esc(customerName).split(" ")[0] || "Hallo";
+
+  return wrap(`
+    <p style="margin:0 0 6px;">${badge("Rechnung")}</p>
+
+    <h1 style="font-size:22px;font-weight:800;color:#fff;margin:16px 0 8px;line-height:1.3;">
+      Deine Rechnung zur GLADDY-Bestellung
+    </h1>
+    <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.75;margin:0 0 28px;">
+      Guten Tag ${firstName}, im Anhang findest du die Rechnung zu deiner Bestellung.
+    </p>
+
+    <div style="background:#0A0A0A;border:1px solid rgba(230,34,140,0.2);border-radius:10px;padding:24px;margin-bottom:28px;">
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <td style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding-bottom:4px;">Rechnungs-Nr.</td>
+          <td style="text-align:right;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding-bottom:4px;">Betrag</td>
+        </tr>
+        <tr>
+          <td style="font-size:20px;font-weight:700;color:#fff;font-family:'Courier New',monospace;letter-spacing:0.06em;">${esc(invoiceNumber)}</td>
+          <td style="text-align:right;font-size:20px;font-weight:700;color:#E6228C;">${fmt(totalCents)}</td>
+        </tr>
+      </table>
+    </div>
+
+    ${divider()}
+
+    <p style="font-size:13px;color:rgba(255,255,255,0.3);margin:0;line-height:1.7;">
+      Bei Rückfragen antworten Sie einfach auf diese E-Mail.
+    </p>
+  `);
+}

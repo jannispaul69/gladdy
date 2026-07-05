@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { Resend } from "resend";
 import { FROM, orderConfirmationHtml } from "@/lib/email-templates";
+import { generateOrderInvoice } from "@/lib/generate-order-invoice";
 
 export const dynamic = "force-dynamic";
 
@@ -91,8 +92,25 @@ async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.
       shipping_rate:            session.shipping_cost?.shipping_rate as string ?? null,
       updated_at:               new Date().toISOString(),
     })
-    .select("id")
+    .select("id, created_at")
     .single();
+
+  // Generate invoice PDF (safe to fail without blocking order confirmation)
+  if (order?.id) {
+    try {
+      await generateOrderInvoice(supabase, {
+        id: order.id,
+        created_at: order.created_at,
+        customer_name: customerName,
+        customer_email: customerEmail,
+        total_cents: session.amount_total ?? 0,
+        items: lineItems.data,
+        shipping_address: addr,
+      });
+    } catch (e) {
+      console.error("[stripe/webhook] Invoice generation failed:", e);
+    }
+  }
 
   // Send order confirmation email
   const emailAddr = addr ? {

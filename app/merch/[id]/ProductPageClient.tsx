@@ -277,6 +277,8 @@ export default function ProductPageClient({ product, shopEnabled = false, testMo
     ? buildShirtThumbs(product.image_url, product.title, selectedColor)
     : isMug
     ? buildMugThumbs(product.image_url, product.title)
+    : product.images && product.images.length > 0
+    ? product.images.map((img) => ({ src: img.url, label: img.label || product.title }))
     : [{ src: product.image_url ?? "/gladdy-logo.png", label: product.title }];
 
   const clampedThumb = Math.min(activeThumb, thumbs.length - 1);
@@ -562,7 +564,7 @@ export default function ProductPageClient({ product, shopEnabled = false, testMo
 
             <AccordionItem title="Lieferung & Rückgabe">
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                <InfoRow label="Lieferzeit"    value="3–5 Werktage nach Shop-Eröffnung" />
+                <InfoRow label="Lieferzeit"    value="3–5 Werktage" />
                 <InfoRow label="Versandkosten" value="ab 4,90 € · ab 40 € kostenfrei" />
                 <InfoRow label="Liefergebiet"  value="DE · AT · CH" />
                 <InfoRow label="Rückgabe"      value="14 Tage Widerrufsrecht" />

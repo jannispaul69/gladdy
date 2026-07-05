@@ -36,6 +36,9 @@ interface Order {
   notes: string | null;
   updated_at: string | null;
   archived: boolean | null;
+  invoice_number: string | null;
+  invoice_url: string | null;
+  invoice_sent_at: string | null;
 }
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
@@ -234,6 +237,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           initialCarrier={(order.shipping_carrier as "dhl" | "dpd" | "hermes" | "gls" | "other") ?? "dhl"}
           customerEmail={order.customer_email}
           initialArchived={order.archived ?? false}
+          invoiceNumber={order.invoice_number}
+          invoiceUrl={order.invoice_url}
+          invoiceSentAt={order.invoice_sent_at}
         />
       </div>
 

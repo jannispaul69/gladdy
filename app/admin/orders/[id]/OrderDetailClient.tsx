@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Truck, Mail, RotateCcw, Archive, Trash2 } from "lucide-react";
+import { Truck, Mail, RotateCcw, Archive, Trash2, FileText, Download } from "lucide-react";
 import { CARRIERS, trackingUrl, type ShippingCarrier } from "@/lib/email-templates";
 
 type OrderStatus = "pending" | "paid" | "shipped" | "delivered" | "refunded" | "cancelled";
@@ -24,6 +24,9 @@ interface Props {
   initialCarrier: ShippingCarrier;
   customerEmail: string;
   initialArchived?: boolean;
+  invoiceNumber?: string | null;
+  invoiceUrl?: string | null;
+  invoiceSentAt?: string | null;
 }
 
 export default function OrderDetailClient({
@@ -34,6 +37,9 @@ export default function OrderDetailClient({
   initialCarrier,
   customerEmail,
   initialArchived = false,
+  invoiceNumber = null,
+  invoiceUrl = null,
+  invoiceSentAt = null,
 }: Props) {
   const router = useRouter();
   const [status,   setStatus]   = useState<OrderStatus>(initialStatus);
@@ -42,6 +48,8 @@ export default function OrderDetailClient({
   const [notes,    setNotes]    = useState(initialNotes);
   const [archived, setArchived] = useState(initialArchived);
   const [saving,   setSaving]   = useState(false);
+  const [sendingInvoice, setSendingInvoice] = useState(false);
+  const [invoiceSentAtState, setInvoiceSentAtState] = useState(invoiceSentAt);
   const [msg,      setMsg]      = useState<{ ok: boolean; text: string } | null>(null);
 
   function showMsg(ok: boolean, text: string) {
@@ -105,6 +113,25 @@ export default function OrderDetailClient({
       showMsg(false, "Verbindungsfehler");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleSendInvoice() {
+    setSendingInvoice(true);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/send-invoice`, { method: "POST" });
+      const json = await res.json();
+      if (json.ok) {
+        setInvoiceSentAtState(new Date().toISOString());
+        showMsg(true, `Rechnung ${json.invoiceNumber} wurde an den Kunden gesendet.`);
+        router.refresh();
+      } else {
+        showMsg(false, json.error ?? "Fehler beim Senden der Rechnung.");
+      }
+    } catch {
+      showMsg(false, "Verbindungsfehler");
+    } finally {
+      setSendingInvoice(false);
     }
   }
 
@@ -268,6 +295,63 @@ export default function OrderDetailClient({
           >
             {CARRIERS.find(c => c.value === carrier)?.label ?? "Tracking"} öffnen →
           </a>
+        )}
+      </div>
+
+      {/* ── Rechnung ───────────────────────────────────────────────────────── */}
+      <div style={card}>
+        <span style={sectionLabel}>Rechnung</span>
+        {invoiceNumber ? (
+          <>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
+              <FileText size={14} style={{ color: "var(--primary)" }} strokeWidth={1.75} />
+              <span style={{ fontSize: "0.85rem", color: "#fff", fontFamily: "monospace", fontWeight: 600 }}>
+                {invoiceNumber}
+              </span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              {invoiceUrl && (
+                <a
+                  href={invoiceUrl}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{
+                    display: "flex", alignItems: "center", gap: "0.5rem",
+                    padding: "0.6rem 1rem", borderRadius: "7px", fontSize: "0.78rem",
+                    fontWeight: 500, fontFamily: "inherit",
+                    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
+                    color: "rgba(255,255,255,0.55)", textDecoration: "none", transition: "all 0.15s",
+                  }}
+                >
+                  <Download size={13} strokeWidth={1.75} />
+                  PDF herunterladen
+                </a>
+              )}
+              <button
+                onClick={handleSendInvoice}
+                disabled={sendingInvoice || !customerEmail}
+                style={{
+                  display: "flex", alignItems: "center", gap: "0.5rem",
+                  padding: "0.6rem 1rem", borderRadius: "7px", fontSize: "0.78rem",
+                  fontWeight: 600, cursor: sendingInvoice ? "wait" : "pointer", fontFamily: "inherit",
+                  background: "rgba(230,34,140,0.12)", border: "1px solid rgba(230,34,140,0.25)",
+                  color: "var(--primary)", textAlign: "left", transition: "all 0.15s",
+                  opacity: sendingInvoice ? 0.6 : 1,
+                }}
+              >
+                <Mail size={13} strokeWidth={1.75} />
+                {sendingInvoice ? "Wird gesendet …" : "Rechnung an Kunden senden"}
+              </button>
+              {invoiceSentAtState && (
+                <p style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.25)", margin: 0 }}>
+                  Zuletzt gesendet: {new Date(invoiceSentAtState).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                </p>
+              )}
+            </div>
+          </>
+        ) : (
+          <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.3)" }}>
+            Noch keine Rechnung vorhanden.
+          </p>
         )}
       </div>
 

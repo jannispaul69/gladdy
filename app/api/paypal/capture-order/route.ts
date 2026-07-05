@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { generateOrderInvoice } from "@/lib/generate-order-invoice";
 
 export async function POST(req: NextRequest) {
   const clientId = process.env.PAYPAL_CLIENT_ID;
@@ -92,14 +93,38 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        await supabase.from("orders").insert({
-          customer_email: capture.payer?.email_address ?? "",
-          customer_name: `${capture.payer?.name?.given_name ?? ""} ${capture.payer?.name?.surname ?? ""}`.trim(),
-          total_cents: Math.round(parseFloat(capturedAmount) * 100),
-          status: "paid",
-          stripe_payment_intent_id: captureId,
-          items: capture.purchase_units,
-        });
+        const customerEmail = capture.payer?.email_address ?? "";
+        const customerName  = `${capture.payer?.name?.given_name ?? ""} ${capture.payer?.name?.surname ?? ""}`.trim();
+        const totalCents    = Math.round(parseFloat(capturedAmount) * 100);
+
+        const { data: newOrder } = await supabase
+          .from("orders")
+          .insert({
+            customer_email: customerEmail,
+            customer_name: customerName,
+            total_cents: totalCents,
+            status: "paid",
+            stripe_payment_intent_id: captureId,
+            items: capture.purchase_units,
+          })
+          .select("id, created_at")
+          .single();
+
+        if (newOrder?.id) {
+          try {
+            await generateOrderInvoice(supabase, {
+              id: newOrder.id,
+              created_at: newOrder.created_at,
+              customer_name: customerName,
+              customer_email: customerEmail,
+              total_cents: totalCents,
+              items: capture.purchase_units,
+              shipping_address: null,
+            });
+          } catch (e) {
+            console.error("[paypal/capture] Invoice generation failed:", e);
+          }
+        }
       } catch (dbErr) {
         console.error("[paypal/capture] DB insert failed:", dbErr);
       }

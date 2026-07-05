@@ -5,6 +5,9 @@ export interface ShopSettings {
   testMode: boolean;
 }
 
+// Shop launch: Sunday July 5, 2026 at 18:00 CEST (UTC+2)
+const SHOP_LAUNCH_TIME = new Date("2026-07-05T18:00:00+02:00").getTime();
+
 export async function getShopSettings(): Promise<ShopSettings> {
   try {
     const supabase = getSupabaseAdmin();
@@ -15,10 +18,10 @@ export async function getShopSettings(): Promise<ShopSettings> {
 
     const map = Object.fromEntries((data ?? []).map((r: { key: string; value: string }) => [r.key, r.value]));
     return {
-      shopEnabled: map["shop_enabled"] === "true",
+      shopEnabled: map["shop_enabled"] === "true" || Date.now() >= SHOP_LAUNCH_TIME,
       testMode: map["test_mode"] === "true",
     };
   } catch {
-    return { shopEnabled: false, testMode: false };
+    return { shopEnabled: Date.now() >= SHOP_LAUNCH_TIME, testMode: false };
   }
 }
