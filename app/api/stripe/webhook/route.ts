@@ -34,7 +34,10 @@ export async function POST(req: NextRequest) {
   }
 
   switch (event.type) {
-    case "checkout.session.completed": {
+    case "checkout.session.completed":
+    case "checkout.session.async_payment_succeeded": {
+      // PayPal, SEPA, etc. can confirm payment asynchronously after the
+      // session is created — async_payment_succeeded is when it's actually paid.
       const session = event.data.object as Stripe.Checkout.Session;
       await handleCheckoutCompleted(stripe, session);
       break;
