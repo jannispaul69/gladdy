@@ -534,12 +534,17 @@ export default function ProductPageClient({ product, shopEnabled = false, testMo
                     <InfoRow label="Passform"    value="Regular Fit" />
                     <InfoRow label="Produktion"  value="Faire Produktion · GOTS-zertifiziert" />
                   </>
-                ) : (
+                ) : isMug ? (
                   <>
                     <InfoRow label="Material"    value="Hochwertiger Keramik" />
                     <InfoRow label="Füllvolumen" value="330 ml" />
                     <InfoRow label="Pflege"      value="Spülmaschinenfest · mikrowellengeeignet" />
                   </>
+                ) : product.material ? (
+                  <InfoRow label="Material" value={product.material} />
+                ) : null}
+                {!isShirt && !isMug && product.care_instructions && (
+                  <InfoRow label="Pflege" value={product.care_instructions} />
                 )}
               </div>
             </AccordionItem>

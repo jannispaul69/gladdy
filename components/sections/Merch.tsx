@@ -14,6 +14,8 @@ export type Product = {
   image_url: string | null;
   status: string;
   stock_quantity: number;
+  material?: string | null;
+  care_instructions?: string | null;
 };
 
 function formatPrice(cents: number) {
