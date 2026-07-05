@@ -30,11 +30,12 @@ const SIZE_CHART = [
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {
-  shirt:  "T-Shirt",
-  hoodie: "Hoodie",
-  mug:    "Tasse",
-  cap:    "Cap",
-  other:  "Merch",
+  shirt:    "T-Shirt",
+  hoodie:   "Hoodie",
+  mug:      "Tasse",
+  cap:      "Cap",
+  mousepad: "Mousepad",
+  other:    "Merch",
 };
 
 function formatPrice(cents: number) {
@@ -529,7 +530,7 @@ export default function ProductPageClient({ product, shopEnabled = false, testMo
                 {isShirt ? (
                   <>
                     <InfoRow label="Material"    value="100 % Bio-Baumwolle · Ringspun" />
-                    <InfoRow label="Grammatur"   value="180 g/m²" />
+                    <InfoRow label="Grammatur"   value="190 g/m²" />
                     <InfoRow label="Passform"    value="Regular Fit" />
                     <InfoRow label="Produktion"  value="Faire Produktion · GOTS-zertifiziert" />
                   </>

@@ -8,11 +8,12 @@ import SizeStockField from "./SizeStockField";
 import StatusSelect from "./StatusSelect";
 
 const CATEGORIES = [
-  { value: "shirt",  label: "Shirt" },
-  { value: "hoodie", label: "Hoodie" },
-  { value: "cap",    label: "Cap" },
-  { value: "mug",    label: "Tasse / Becher" },
-  { value: "other",  label: "Sonstiges" },
+  { value: "shirt",    label: "Shirt" },
+  { value: "hoodie",   label: "Hoodie" },
+  { value: "cap",      label: "Cap" },
+  { value: "mug",      label: "Tasse / Becher" },
+  { value: "mousepad", label: "Mousepad" },
+  { value: "other",    label: "Sonstiges" },
 ];
 const STATUSES = [
   { value: "draft",    label: "Entwurf",    color: "#fbbf24" },
