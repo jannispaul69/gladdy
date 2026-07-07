@@ -24,7 +24,7 @@ async function getStats() {
           .select("id, email, created_at")
           .order("created_at", { ascending: false })
           .limit(8),
-        supabase.from("orders").select("id", { count: "exact", head: true }).in("status", ["pending"]),
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "paid"),
         supabase.from("orders").select("total_cents").in("status", ["paid", "shipped", "delivered"]),
       ]);
 

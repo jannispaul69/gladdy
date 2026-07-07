@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import ClearCartOnMount from "@/components/ClearCartOnMount";
 
 export const metadata: Metadata = {
   title: "Zahlung erfolgreich – GLADDY Merch",
@@ -8,6 +9,8 @@ export const metadata: Metadata = {
 
 export default function MerchSuccessPage() {
   return (
+    <>
+    <ClearCartOnMount />
     <div
       style={{
         minHeight: "100vh",
@@ -95,5 +98,6 @@ export default function MerchSuccessPage() {
         </p>
       </div>
     </div>
+    </>
   );
 }

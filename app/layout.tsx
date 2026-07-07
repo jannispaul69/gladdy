@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import CookieBanner from "@/components/CookieBanner";
 import BookingModal from "@/components/BookingModal";
 import { BookingModalProvider } from "@/context/booking-modal";
+import { CartProvider } from "@/context/cart";
 import ImageProtection from "@/components/ImageProtection";
 import "./globals.css";
 
@@ -51,12 +52,14 @@ export default function RootLayout({
   return (
     <html lang="de" className={`${anton.variable} ${inter.variable} h-full`}>
       <body className="min-h-full flex flex-col antialiased noise">
-        <BookingModalProvider>
-          {children}
-          <BookingModal />
-          <CookieBanner />
-          <ImageProtection />
-        </BookingModalProvider>
+        <CartProvider>
+          <BookingModalProvider>
+            {children}
+            <BookingModal />
+            <CookieBanner />
+            <ImageProtection />
+          </BookingModalProvider>
+        </CartProvider>
         <Analytics />
       </body>
     </html>

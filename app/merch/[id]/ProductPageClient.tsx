@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useActionState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { subscribeToShopWaitlist } from "@/app/actions/shop-waitlist";
+import { useCart } from "@/context/cart";
 import type { Product } from "@/components/sections/Merch";
 
 const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"] as const;
@@ -185,69 +186,59 @@ function ShopNotifyForm() {
 }
 
 function BuyButton({
-  product, color, size, isShirt,
+  product, color, size, isShirt, imageSrc,
 }: {
   product: Product;
   color: ColorId;
   size: Size | null | undefined;
   isShirt: boolean;
+  imageSrc?: string;
 }) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState<string | null>(null);
+  const { addItem } = useCart();
+  const [error, setError] = useState<string | null>(null);
+  const [added, setAdded] = useState(false);
 
-  async function handleBuy() {
+  function handleAddToCart() {
     if (isShirt && !size) {
       setError("Bitte zuerst eine Größe auswählen.");
       return;
     }
     setError(null);
-    setLoading(true);
-    try {
-      const colorLabel = color === "black" ? "Schwarz" : "Weiß";
-      const name = isShirt
-        ? `${product.title} — ${colorLabel}, Größe ${size}`
-        : product.title;
 
-      const origin = typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_BASE_URL ?? "";
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: [{ name, price_cents: product.price_cents, quantity: 1 }],
-          success_url: `${origin}/merch/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url:  `${origin}/merch/${product.id}?canceled=1`,
-        }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setError(data.error ?? "Fehler beim Checkout. Bitte erneut versuchen.");
-        setLoading(false);
-      }
-    } catch {
-      setError("Verbindungsfehler. Bitte erneut versuchen.");
-      setLoading(false);
-    }
+    const colorLabel = color === "black" ? "Schwarz" : "Weiß";
+    const name = isShirt
+      ? `${product.title} — ${colorLabel}, Größe ${size}`
+      : product.title;
+    const variantKey = isShirt ? `${color}-${size}` : "default";
+
+    addItem({
+      id: `${product.id}__${variantKey}`,
+      productId: product.id,
+      name,
+      priceCents: product.price_cents,
+      imageUrl: imageSrc,
+    });
+
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
   }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
       <button
-        onClick={handleBuy}
-        disabled={loading}
+        onClick={handleAddToCart}
         style={{
           width: "100%",
-          background: loading ? "rgba(230,34,140,0.5)" : "linear-gradient(135deg, #FF3D9A, #B01570)",
+          background: added ? "#4ade80" : "linear-gradient(135deg, #FF3D9A, #B01570)",
           color: "#fff", border: "none", borderRadius: "10px",
           padding: "1rem 1.5rem", fontSize: "1rem", fontWeight: 700,
-          letterSpacing: "0.06em", cursor: loading ? "wait" : "pointer",
-          fontFamily: "inherit", transition: "opacity 0.2s",
+          letterSpacing: "0.06em", cursor: "pointer",
+          fontFamily: "inherit", transition: "background 0.2s",
           boxShadow: "0 6px 24px rgba(230,34,140,0.4)",
           textTransform: "uppercase",
         }}
       >
-        {loading ? "Weiterleitung …" : "Jetzt kaufen →"}
+        {added ? "✓ Hinzugefügt" : "In den Warenkorb →"}
       </button>
       {isShirt && !size && (
         <p style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.35)", margin: 0, textAlign: "center" }}>
@@ -257,6 +248,12 @@ function BuyButton({
       {error && (
         <p style={{ fontSize: "0.72rem", color: "#f87171", margin: 0 }}>{error}</p>
       )}
+      <Link
+        href="/warenkorb"
+        style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.4)", textAlign: "center", textDecoration: "underline" }}
+      >
+        Zum Warenkorb →
+      </Link>
       <p style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.2)", margin: 0, textAlign: "center" }}>
         Sicherer Checkout via Stripe · Versand DE/AT/CH
       </p>
@@ -520,6 +517,7 @@ export default function ProductPageClient({ product, shopEnabled = false, testMo
               color={selectedColor}
               size={isShirt ? selectedSize : undefined}
               isShirt={isShirt}
+              imageSrc={imgSrc}
             />
           ) : (
             <ShopNotifyForm />

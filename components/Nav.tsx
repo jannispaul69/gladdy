@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
+import { ShoppingBag } from "lucide-react";
 import { navLinks } from "@/content/navigation";
+import { useCart } from "@/context/cart";
 
 const HIGHLIGHT_PINK = ["Booking"];
 const HIGHLIGHT_WARM = ["Merch"];
@@ -14,6 +17,7 @@ export default function Nav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const { itemCount } = useCart();
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 50);
@@ -135,21 +139,44 @@ export default function Nav() {
             </ul>
           </nav>
 
-          {/* Hamburger */}
-          <button aria-label={open ? "Menü schließen" : "Menü öffnen"}
-            aria-expanded={open} aria-controls="mobile-menu"
-            onClick={() => setOpen((v) => !v)} className="nav-toggle"
-            style={{ position: "absolute", right: "1.5rem", background: "none", border: "none", cursor: "pointer", padding: "0.5rem" }}>
-            {[0, 1, 2].map((i) => (
-              <span key={i} style={{
-                display: "block", width: "24px", height: "2px",
-                background: open && i === 1 ? "transparent" : "#fff",
-                borderRadius: "2px", transition: "transform 0.25s",
-                transform: open && i === 0 ? "translateY(7px) rotate(45deg)"
-                  : open && i === 2 ? "translateY(-7px) rotate(-45deg)" : "none",
-              }} />
-            ))}
-          </button>
+          {/* Right-side controls: cart + hamburger */}
+          <div style={{ position: "absolute", right: "1.5rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            <Link
+              href="/warenkorb"
+              aria-label={`Warenkorb${itemCount > 0 ? ` (${itemCount} Artikel)` : ""}`}
+              style={{ position: "relative", display: "flex", alignItems: "center", color: "#fff", textDecoration: "none", padding: "0.4rem" }}
+            >
+              <ShoppingBag size={20} strokeWidth={1.75} />
+              {itemCount > 0 && (
+                <span style={{
+                  position: "absolute", top: "-2px", right: "-4px",
+                  background: "var(--primary)", color: "#fff",
+                  fontSize: "0.62rem", fontWeight: 700, lineHeight: 1,
+                  minWidth: "16px", height: "16px", borderRadius: "100px",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  padding: "0 3px",
+                }}>
+                  {itemCount}
+                </span>
+              )}
+            </Link>
+
+            {/* Hamburger */}
+            <button aria-label={open ? "Menü schließen" : "Menü öffnen"}
+              aria-expanded={open} aria-controls="mobile-menu"
+              onClick={() => setOpen((v) => !v)} className="nav-toggle"
+              style={{ background: "none", border: "none", cursor: "pointer", padding: "0.5rem" }}>
+              {[0, 1, 2].map((i) => (
+                <span key={i} style={{
+                  display: "block", width: "24px", height: "2px",
+                  background: open && i === 1 ? "transparent" : "#fff",
+                  borderRadius: "2px", transition: "transform 0.25s",
+                  transform: open && i === 0 ? "translateY(7px) rotate(45deg)"
+                    : open && i === 2 ? "translateY(-7px) rotate(-45deg)" : "none",
+                }} />
+              ))}
+            </button>
+          </div>
         </div>
       </header>
 
