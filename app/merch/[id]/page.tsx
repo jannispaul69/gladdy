@@ -6,6 +6,9 @@ import ProductPageClient from "./ProductPageClient";
 import type { Product } from "@/components/sections/Merch";
 import { getShopSettings } from "@/lib/shop-settings";
 
+// Shop status must reflect live DB state, not a build-time snapshot.
+export const dynamic = "force-dynamic";
+
 async function getProduct(id: string): Promise<Product | null> {
   try {
     const { getSupabaseAdmin } = await import("@/lib/supabase-admin");

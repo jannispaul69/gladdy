@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   description: "Offizieller GLADDY Party Crew Merch Shop. T-Shirts, Tassen und mehr.",
 };
 
+// Shop status/products must reflect live DB state, not a build-time snapshot.
+export const dynamic = "force-dynamic";
+
 async function getProducts(): Promise<Product[]> {
   try {
     const { getSupabaseAdmin } = await import("@/lib/supabase-admin");

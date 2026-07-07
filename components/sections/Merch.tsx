@@ -307,7 +307,7 @@ export default function Merch({ products = [] }: { products?: Product[] }) {
             </div>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.75rem" }}>
               <p style={{ color: "rgba(255,255,255,0.32)", fontSize: "0.875rem", maxWidth: "280px", lineHeight: 1.65, textAlign: "right" }}>
-                Offizieller GLADDY Party Crew Merch. Shop öffnet bald — jetzt vormerken.
+                Offizieller GLADDY Party Crew Merch.
               </p>
               <Link
                 href="/shop"
