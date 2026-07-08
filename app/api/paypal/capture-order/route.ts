@@ -179,7 +179,13 @@ export async function POST(req: NextRequest) {
                     amount_total: i.amountCents,
                   })),
                   totalCents,
-                  shippingAddress: shippingAddress ?? null,
+                  shippingAddress: shippingAddress ? {
+                    line1: shippingAddress.line1 ?? undefined,
+                    line2: shippingAddress.line2 ?? undefined,
+                    city: shippingAddress.city ?? undefined,
+                    postal_code: shippingAddress.postal_code ?? undefined,
+                    country: shippingAddress.country ?? undefined,
+                  } : null,
                 }),
                 attachments: [{ filename: `Lieferschein-${orderNumber}.pdf`, content: packingSlip.pdfBuffer.toString("base64") }],
               });
