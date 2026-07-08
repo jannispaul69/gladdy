@@ -50,6 +50,14 @@ export async function POST(req: NextRequest) {
     return `${origin}${url.startsWith("/") ? "" : "/"}${url}`;
   }
 
+  // Free standard shipping from €40 subtotal, as advertised on product pages.
+  const FREE_SHIPPING_THRESHOLD_CENTS = 4000;
+  const subtotalCents = body.items.reduce((sum, item) => sum + item.price_cents * item.quantity, 0);
+  const standardShippingCents = subtotalCents >= FREE_SHIPPING_THRESHOLD_CENTS ? 0 : 490;
+  const standardShippingLabel = standardShippingCents === 0
+    ? "Standard (3–5 Werktage) — kostenfrei"
+    : "Standard (3–5 Werktage)";
+
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -77,8 +85,8 @@ export async function POST(req: NextRequest) {
         {
           shipping_rate_data: {
             type: "fixed_amount",
-            fixed_amount: { amount: 490, currency: "eur" },
-            display_name: "Standard (3–5 Werktage)",
+            fixed_amount: { amount: standardShippingCents, currency: "eur" },
+            display_name: standardShippingLabel,
           },
         },
         {
