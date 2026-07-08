@@ -503,7 +503,7 @@ export function newOrderInternalEmailHtml({
         ${esc(customerName)}<br />
         ${addr.line1 ? `${esc(addr.line1)}<br />` : ""}
         ${addr.line2 ? `${esc(addr.line2)}<br />` : ""}
-        ${[addr.postal_code, addr.city].filter(Boolean).map(esc).join(" ")}<br />
+        ${[addr.postal_code, addr.city].filter((v): v is string => Boolean(v)).map(esc).join(" ")}<br />
         ${addr.country ? esc(addr.country) : ""}
       </p>
     `
