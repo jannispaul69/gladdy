@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { normalizeOrderItems, renderInvoicePdf, type InvoiceCompany } from "@/lib/invoice-pdf";
+import { renderPackingSlipPdf } from "@/lib/packing-slip-pdf";
 
 interface OrderRow {
   id: string;
@@ -7,6 +8,7 @@ interface OrderRow {
   customer_name: string;
   customer_email: string;
   total_cents: number;
+  status: string;
   items: unknown;
   shipping_address: {
     line1?: string | null;
@@ -95,4 +97,59 @@ export async function generateOrderInvoice(
   await supabase.from("orders").update({ invoice_number: invoiceNumber, invoice_url: invoiceUrl }).eq("id", order.id);
 
   return { invoiceNumber, invoiceUrl, pdfBuffer };
+}
+
+/**
+ * Generates the internal packing slip PDF for an order, uploads it to
+ * storage, and persists packing_slip_url on the order row. Safe to call
+ * once per order — skips generation if packing_slip_url is already set.
+ */
+export async function generateOrderPackingSlip(
+  supabase: SupabaseClient,
+  order: OrderRow
+): Promise<{ packingSlipUrl: string; pdfBuffer: Buffer } | null> {
+  const { data: existing } = await supabase
+    .from("orders")
+    .select("packing_slip_url")
+    .eq("id", order.id)
+    .single();
+
+  const path = `packing-slips/${order.id}.pdf`;
+
+  if (existing?.packing_slip_url) {
+    const { data } = await supabase.storage.from("gladdy-uploads").download(path);
+    const pdfBuffer = data ? Buffer.from(await data.arrayBuffer()) : Buffer.alloc(0);
+    return { packingSlipUrl: existing.packing_slip_url, pdfBuffer };
+  }
+
+  const items = normalizeOrderItems(order.items, order.total_cents);
+  const orderNumber = order.id.slice(0, 8).toUpperCase();
+
+  const pdfBuffer = await renderPackingSlipPdf({
+    id: order.id,
+    orderNumber,
+    createdAt: order.created_at,
+    customerName: order.customer_name,
+    customerEmail: order.customer_email,
+    totalCents: order.total_cents,
+    status: order.status,
+    items,
+    shippingAddress: order.shipping_address,
+  });
+
+  const { error: uploadError } = await supabase.storage
+    .from("gladdy-uploads")
+    .upload(path, pdfBuffer, { contentType: "application/pdf", upsert: true });
+
+  if (uploadError) {
+    console.error("[generate-order-packing-slip] Upload failed:", uploadError);
+    return null;
+  }
+
+  const { data: urlData } = supabase.storage.from("gladdy-uploads").getPublicUrl(path);
+  const packingSlipUrl = urlData.publicUrl;
+
+  await supabase.from("orders").update({ packing_slip_url: packingSlipUrl }).eq("id", order.id);
+
+  return { packingSlipUrl, pdfBuffer };
 }

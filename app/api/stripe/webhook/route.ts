@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { Resend } from "resend";
-import { FROM, orderConfirmationHtml } from "@/lib/email-templates";
-import { generateOrderInvoice } from "@/lib/generate-order-invoice";
+import { FROM, orderConfirmationHtml, newOrderInternalEmailHtml } from "@/lib/email-templates";
+import { generateOrderInvoice, generateOrderPackingSlip } from "@/lib/generate-order-invoice";
+
+const BOOKING_EMAIL = process.env.BOOKING_EMAIL ?? "booking@gladdy-offiziell.de";
 
 export const dynamic = "force-dynamic";
 
@@ -104,11 +106,53 @@ async function handleCheckoutCompleted(stripe: Stripe, session: Stripe.Checkout.
         customer_name: customerName,
         customer_email: customerEmail,
         total_cents: session.amount_total ?? 0,
+        status: "paid",
         items: lineItems.data,
         shipping_address: addr,
       });
     } catch (e) {
       console.error("[stripe/webhook] Invoice generation failed:", e);
+    }
+
+    // Generate packing slip + notify merch team (safe to fail without blocking anything else)
+    try {
+      const packingSlip = await generateOrderPackingSlip(supabase, {
+        id: order.id,
+        created_at: order.created_at,
+        customer_name: customerName,
+        customer_email: customerEmail,
+        total_cents: session.amount_total ?? 0,
+        status: "paid",
+        items: lineItems.data,
+        shipping_address: addr,
+      });
+
+      const resendKey = process.env.RESEND_API_KEY;
+      if (packingSlip && resendKey) {
+        const orderNumber = order.id.slice(0, 8).toUpperCase();
+        await new Resend(resendKey).emails.send({
+          from: FROM,
+          to: BOOKING_EMAIL,
+          subject: `Neue Bestellung #${orderNumber} — GLADDY Merch`,
+          html: newOrderInternalEmailHtml({
+            orderNumber,
+            customerName,
+            customerEmail,
+            items: lineItems.data.map(i => ({ ...i, description: i.description ?? undefined, quantity: i.quantity ?? undefined })),
+            totalCents: session.amount_total ?? 0,
+            shippingAddress: addr ? {
+              line1: addr.line1 ?? undefined,
+              line2: addr.line2 ?? undefined,
+              city: addr.city ?? undefined,
+              postal_code: addr.postal_code ?? undefined,
+              country: addr.country ?? undefined,
+            } : null,
+          }),
+          attachments: [{ filename: `Lieferschein-${orderNumber}.pdf`, content: packingSlip.pdfBuffer.toString("base64") }],
+        });
+      }
+    } catch (e) {
+      console.error("[stripe/webhook] Packing slip generation/notification failed:", e);
     }
   }
 

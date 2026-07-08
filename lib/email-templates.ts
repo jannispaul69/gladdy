@@ -478,3 +478,67 @@ export function orderInvoiceEmailHtml({
     </p>
   `);
 }
+
+// ── Internal: neue Bestellung fürs Merch-Team ────────────────────────────────
+
+export function newOrderInternalEmailHtml({
+  orderNumber,
+  customerName,
+  customerEmail,
+  items,
+  totalCents,
+  shippingAddress,
+}: {
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  items: OrderItem[];
+  totalCents: number;
+  shippingAddress: ShippingAddress | null;
+}) {
+  const addr = shippingAddress;
+  const addressBlock = addr
+    ? `
+      <p style="font-size:14px;color:rgba(255,255,255,0.8);margin:0;line-height:1.7;">
+        ${esc(customerName)}<br />
+        ${addr.line1 ? `${esc(addr.line1)}<br />` : ""}
+        ${addr.line2 ? `${esc(addr.line2)}<br />` : ""}
+        ${[addr.postal_code, addr.city].filter(Boolean).map(esc).join(" ")}<br />
+        ${addr.country ? esc(addr.country) : ""}
+      </p>
+    `
+    : `<p style="font-size:14px;color:rgba(255,255,255,0.4);margin:0;">Keine Lieferadresse hinterlegt.</p>`;
+
+  return wrap(`
+    <p style="margin:0 0 6px;">${badge("Neue Bestellung")}</p>
+
+    <h1 style="font-size:22px;font-weight:800;color:#fff;margin:16px 0 8px;line-height:1.3;">
+      Bestellung #${esc(orderNumber)}
+    </h1>
+    <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.75;margin:0 0 24px;">
+      Neue bezahlte Bestellung — Lieferschein im Anhang. Bitte zur Bearbeitung ans Merch-Team weiterleiten.
+    </p>
+
+    <div style="background:#0A0A0A;border:1px solid rgba(230,34,140,0.2);border-radius:10px;padding:20px 24px;margin-bottom:20px;">
+      <p style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin:0 0 8px;">Kunde</p>
+      <p style="font-size:14px;color:#fff;margin:0 0 4px;font-weight:600;">${esc(customerName)}</p>
+      <p style="font-size:13px;color:rgba(255,255,255,0.5);margin:0;">${esc(customerEmail)}</p>
+    </div>
+
+    <div style="background:#0A0A0A;border:1px solid rgba(230,34,140,0.2);border-radius:10px;padding:20px 24px;margin-bottom:20px;">
+      <p style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin:0 0 8px;">Lieferadresse</p>
+      ${addressBlock}
+    </div>
+
+    <div style="background:#0A0A0A;border:1px solid rgba(230,34,140,0.2);border-radius:10px;padding:20px 24px;margin-bottom:8px;">
+      <p style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin:0 0 10px;">Artikel</p>
+      ${itemsTable(items, totalCents)}
+    </div>
+
+    ${divider()}
+
+    <p style="font-size:13px;color:rgba(255,255,255,0.3);margin:0;line-height:1.7;">
+      Der vollständige Lieferschein liegt dieser E-Mail als PDF bei.
+    </p>
+  `);
+}

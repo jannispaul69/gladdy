@@ -27,6 +27,7 @@ interface Props {
   invoiceNumber?: string | null;
   invoiceUrl?: string | null;
   invoiceSentAt?: string | null;
+  packingSlipUrl?: string | null;
 }
 
 export default function OrderDetailClient({
@@ -40,6 +41,7 @@ export default function OrderDetailClient({
   invoiceNumber = null,
   invoiceUrl = null,
   invoiceSentAt = null,
+  packingSlipUrl = null,
 }: Props) {
   const router = useRouter();
   const [status,   setStatus]   = useState<OrderStatus>(initialStatus);
@@ -369,6 +371,31 @@ export default function OrderDetailClient({
               {sendingInvoice ? "Wird erstellt …" : "Rechnung erstellen & senden"}
             </button>
           </div>
+        )}
+      </div>
+
+      {/* ── Lieferschein ───────────────────────────────────────────────────── */}
+      <div style={card}>
+        <span style={sectionLabel}>Lieferschein</span>
+        {packingSlipUrl ? (
+          <a
+            href={packingSlipUrl}
+            target="_blank" rel="noopener noreferrer"
+            style={{
+              display: "flex", alignItems: "center", gap: "0.5rem",
+              padding: "0.6rem 1rem", borderRadius: "7px", fontSize: "0.78rem",
+              fontWeight: 500, fontFamily: "inherit",
+              background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
+              color: "rgba(255,255,255,0.55)", textDecoration: "none", transition: "all 0.15s",
+            }}
+          >
+            <Download size={13} strokeWidth={1.75} />
+            PDF herunterladen
+          </a>
+        ) : (
+          <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.3)", margin: 0 }}>
+            Wird automatisch bei Zahlungseingang erstellt und ans Merch-Team gesendet.
+          </p>
         )}
       </div>
 
