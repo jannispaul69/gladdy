@@ -18,7 +18,8 @@ const FILES = [
     id: "pressefotos",
     label: "Pressefotos",
     desc: "Hochauflösende Fotos für Print und Online",
-    url: `${BUCKET}/pressekit/pressefotos.zip`,
+    // >50 MB, exceeds the Supabase file limit — served from /public instead
+    url: "/presskit/pressefotos.zip",
     type: "ZIP",
     Icon: ImageIcon,
   },
