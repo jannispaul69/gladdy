@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
+import { shirtImage, mugImage, shirtCardSide } from "@/lib/product-images";
 
 export type Product = {
   id: string;
@@ -17,6 +18,7 @@ export type Product = {
   material?: string | null;
   care_instructions?: string | null;
   images?: { url: string; label: string }[] | null;
+  tags?: string[] | null;
 };
 
 function formatPrice(cents: number) {
@@ -34,22 +36,11 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 function getCardImages(product: Product): string[] {
   if (product.category === "shirt" || product.category === "hoodie") {
-    const gender =
-      product.title.toLowerCase().includes("damen") || product.image_url?.includes("women")
-        ? "women"
-        : "men";
-    return [
-      `/products/shirt-${gender}-black-front.png`,
-      `/products/shirt-${gender}-white-front.png`,
-    ];
+    const side = shirtCardSide(product);
+    return [shirtImage(product, "black", side), shirtImage(product, "white", side)];
   }
   if (product.category === "mug") {
-    const base = product.title.toLowerCase().includes("herz") ? "herztasse" : "tasse";
-    return [
-      `/products/${base}-front.png`,
-      `/products/${base}-left.png`,
-      `/products/${base}-right.png`,
-    ];
+    return [mugImage(product, "front"), mugImage(product, "left"), mugImage(product, "right")];
   }
   if (product.images && product.images.length > 0) {
     return product.images.map((img) => img.url);

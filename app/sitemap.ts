@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-const BASE = "https://gladdy.de";
+const BASE = "https://gladdy-offiziell.de";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -15,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const { createClient } = await import("@supabase/supabase-js");
     const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
     const { data } = await supabase

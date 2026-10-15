@@ -3,7 +3,7 @@ import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { Resend } from "resend";
 import { FROM, pressekitEmailHtml } from "@/lib/email-templates";
 
-const SUPABASE_URL = process.env.SUPABASE_URL ?? "https://hkgalmsznvxvgrjwiccs.supabase.co";
+const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
 const BUCKET = `${SUPABASE_URL}/storage/v1/object/public/gladdy-uploads`;
 const PAGE_URL = process.env.SITE_URL
   ? `${process.env.SITE_URL}/veranstalter`

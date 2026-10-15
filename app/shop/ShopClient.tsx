@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Product } from "@/components/sections/Merch";
+import { shirtImage, mugImage, shirtCardSide } from "@/lib/product-images";
 
 const CATEGORY_FILTER = [
   { id: "all",   label: "Alle" },
@@ -28,15 +29,10 @@ function formatPrice(cents: number) {
 
 function getCardImage(product: Product): string {
   if (product.category === "shirt" || product.category === "hoodie") {
-    const gender =
-      product.title.toLowerCase().includes("damen") || product.image_url?.includes("women")
-        ? "women"
-        : "men";
-    return `/products/shirt-${gender}-black-front.png`;
+    return shirtImage(product, "black", shirtCardSide(product));
   }
   if (product.category === "mug") {
-    const base = product.title.toLowerCase().includes("herz") ? "herztasse" : "tasse";
-    return `/products/${base}-front.png`;
+    return mugImage(product, "front");
   }
   return product.image_url ?? "/gladdy-logo.png";
 }

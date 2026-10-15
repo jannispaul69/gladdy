@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const SUPABASE_URL = process.env.SUPABASE_URL ?? "https://hkgalmsznvxvgrjwiccs.supabase.co";
+const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
 const BUCKET = `${SUPABASE_URL}/storage/v1/object/public/gladdy-uploads`;
 
 const FILES = [

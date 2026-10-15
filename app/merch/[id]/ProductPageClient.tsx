@@ -7,12 +7,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { subscribeToShopWaitlist } from "@/app/actions/shop-waitlist";
 import { useCart } from "@/context/cart";
 import type { Product } from "@/components/sections/Merch";
+import { shirtImage, mugImage, shirtCardSide, isPersonalizable } from "@/lib/product-images";
 
 const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"] as const;
 type Size = (typeof SIZES)[number];
 type ColorId = "black" | "white";
-type ShirtSide = "front" | "back";
-type MugAngle = "front" | "left" | "right";
 
 const COLORS = [
   { id: "black" as ColorId, label: "Schwarz", hex: "#141414", border: "rgba(255,255,255,0.2)" },
@@ -43,33 +42,27 @@ function formatPrice(cents: number) {
   return `€ ${(cents / 100).toFixed(2).replace(".", ",")}`;
 }
 
-function getShirtImage(imageUrl: string | null, title: string, color: ColorId, side: ShirtSide): string {
-  const src = `${imageUrl ?? ""}${title}`.toLowerCase();
-  const gender = src.includes("women") || src.includes("damen") ? "women" : "men";
-  return `/products/shirt-${gender}-${color}-${side}.png`;
-}
-
-function getMugImage(imageUrl: string | null, title: string, angle: MugAngle): string {
-  const src = `${imageUrl ?? ""}${title}`.toLowerCase();
-  const type = src.includes("herztasse") || src.includes("herz") ? "herztasse" : "tasse";
-  return `/products/${type}-${angle}.png`;
-}
-
 type ThumbEntry = { src: string; label: string };
 
-function buildShirtThumbs(imageUrl: string | null, title: string, color: ColorId): ThumbEntry[] {
+function buildShirtThumbs(product: Product, color: ColorId): ThumbEntry[] {
+  const front = { src: shirtImage(product, color, "front"), label: "Vorne" };
+  const back  = { src: shirtImage(product, color, "back"),  label: "Hinten" };
+  return shirtCardSide(product) === "back" ? [back, front] : [front, back];
+}
+
+function buildMugThumbs(product: Product): ThumbEntry[] {
   return [
-    { src: getShirtImage(imageUrl, title, color, "front"), label: "Vorne" },
-    { src: getShirtImage(imageUrl, title, color, "back"),  label: "Hinten" },
+    { src: mugImage(product, "front"), label: "Vorne" },
+    { src: mugImage(product, "left"),  label: "Links" },
+    { src: mugImage(product, "right"), label: "Rechts" },
   ];
 }
 
-function buildMugThumbs(imageUrl: string | null, title: string): ThumbEntry[] {
-  return [
-    { src: getMugImage(imageUrl, title, "front"), label: "Vorne" },
-    { src: getMugImage(imageUrl, title, "left"),  label: "Links" },
-    { src: getMugImage(imageUrl, title, "right"), label: "Rechts" },
-  ];
+const MAX_NAME_LENGTH = 20;
+
+/** Keeps Latin letters (incl. umlauts/accents), digits, spaces and a few separators; collapses whitespace. */
+function cleanPrintName(raw: string): string {
+  return raw.replace(/[^A-Za-z0-9À-ÖØ-öø-ÿ .'&-]/g, "").replace(/\s+/g, " ").trim().slice(0, MAX_NAME_LENGTH);
 }
 
 function AccordionItem({
@@ -197,19 +190,29 @@ function BuyButton({
   const { addItem } = useCart();
   const [error, setError] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
+  const personalizable = isPersonalizable(product);
+  const [printName, setPrintName] = useState("");
 
   function handleAddToCart() {
     if (isShirt && !size) {
       setError("Bitte zuerst eine Größe auswählen.");
       return;
     }
+    const cleanName = cleanPrintName(printName);
+    if (personalizable && !cleanName) {
+      setError("Bitte den Namen für den Aufdruck eingeben.");
+      return;
+    }
     setError(null);
 
     const colorLabel = color === "black" ? "Schwarz" : "Weiß";
-    const name = isShirt
+    const baseName = isShirt
       ? `${product.title} — ${colorLabel}, Größe ${size}`
       : product.title;
-    const variantKey = isShirt ? `${color}-${size}` : "default";
+    const name = personalizable ? `${baseName} — Name: ${cleanName}` : baseName;
+    const variantKey = isShirt
+      ? `${color}-${size}`
+      : personalizable ? `name-${cleanName.toLowerCase()}` : "default";
 
     addItem({
       id: `${product.id}__${variantKey}`,
@@ -225,6 +228,30 @@ function BuyButton({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+      {personalizable && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginBottom: "0.4rem" }}>
+          <label htmlFor="print-name" style={{ fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)" }}>
+            Dein Name auf der Tasse
+          </label>
+          <input
+            id="print-name"
+            type="text"
+            value={printName}
+            maxLength={MAX_NAME_LENGTH}
+            onChange={(e) => { setPrintName(e.target.value); setError(null); }}
+            placeholder="z. B. Micha"
+            autoComplete="off"
+            style={{
+              background: "rgba(255,255,255,0.04)", border: "1px solid rgba(230,34,140,0.35)",
+              borderRadius: "8px", padding: "0.8rem 1rem", color: "#fff",
+              fontSize: "1rem", outline: "none", fontFamily: "inherit",
+            }}
+          />
+          <p style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.35)", margin: 0 }}>
+            Max. {MAX_NAME_LENGTH} Zeichen · wird genau so gedruckt · personalisierte Artikel sind vom Widerruf ausgeschlossen
+          </p>
+        </div>
+      )}
       <button
         onClick={handleAddToCart}
         style={{
@@ -271,9 +298,9 @@ export default function ProductPageClient({ product, shopEnabled = false, testMo
   const categoryLabel = CATEGORY_LABELS[product.category] ?? "Merch";
 
   const thumbs: ThumbEntry[] = isShirt
-    ? buildShirtThumbs(product.image_url, product.title, selectedColor)
+    ? buildShirtThumbs(product, selectedColor)
     : isMug
-    ? buildMugThumbs(product.image_url, product.title)
+    ? buildMugThumbs(product)
     : product.images && product.images.length > 0
     ? product.images.map((img) => ({ src: img.url, label: img.label || product.title }))
     : [{ src: product.image_url ?? "/gladdy-logo.png", label: product.title }];
