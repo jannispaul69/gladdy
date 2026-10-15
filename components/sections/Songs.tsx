@@ -1,13 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import { motion, useInView } from "framer-motion";
-import { songs } from "@/content/songs";
 import { FloatingDecor } from "@/components/Decor";
-
-const allPlaceholder = songs.every(
-  (s) => s.spotifyTrackId.startsWith("PLACEHOLDER") && s.youtubeVideoId.startsWith("PLACEHOLDER")
-);
+import type { SongView } from "@/lib/songs";
 
 function MusicBars() {
   const heights = [40, 70, 100, 60, 90, 50, 80, 45, 75, 55, 95, 65];
@@ -111,10 +108,14 @@ function ComingSoonTeaser() {
 
 type Tab = "spotify" | "youtube";
 
-function SongCard({ song, index }: { song: (typeof songs)[0]; index: number }) {
+function SongCard({ song, isNew, index }: { song: SongView; isNew: boolean; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
-  const [tab, setTab] = useState<Tab>("spotify");
+  const tabs: Tab[] = [
+    ...(song.spotifyId ? (["spotify"] as Tab[]) : []),
+    ...(song.youtubeId ? (["youtube"] as Tab[]) : []),
+  ];
+  const [tab, setTab] = useState<Tab | undefined>(tabs[0]);
 
   return (
     <motion.div
@@ -123,61 +124,92 @@ function SongCard({ song, index }: { song: (typeof songs)[0]; index: number }) {
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: index * 0.12 }}
       className="card-pink"
-      style={{ overflow: "hidden" }}
+      style={{ overflow: "hidden", display: "flex", flexDirection: "column" }}
     >
-      <div style={{ padding: "1.25rem 1.5rem 0", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div>
-          <p style={{ fontWeight: 600, color: "#fff", fontSize: "1rem", marginBottom: "0.2rem" }}>{song.title}</p>
-          {song.subtitle && (
-            <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.45)", letterSpacing: "0.04em" }}>{song.subtitle}</p>
-          )}
-        </div>
-        <div style={{ display: "flex", gap: "0.375rem" }}>
-          {(["spotify", "youtube"] as Tab[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
+      {song.coverUrl && (
+        <div style={{ position: "relative", aspectRatio: "1 / 1", background: "#0f0f0f" }}>
+          <Image
+            src={song.coverUrl}
+            alt={`Cover: ${song.title}`}
+            fill
+            sizes="(max-width: 700px) 100vw, 360px"
+            style={{ objectFit: "cover" }}
+            priority={index === 0}
+          />
+          {isNew && (
+            <span
               style={{
-                padding: "0.3rem 0.7rem", borderRadius: "4px", border: "1px solid",
-                borderColor: tab === t ? "var(--primary)" : "rgba(230,34,140,0.2)",
-                background: tab === t ? "rgba(230,34,140,0.15)" : "transparent",
-                color: tab === t ? "#fff" : "rgba(255,255,255,0.4)",
-                fontSize: "0.65rem", letterSpacing: "0.08em", cursor: "pointer",
-                textTransform: "uppercase", transition: "all 0.2s",
+                position: "absolute", top: "0.85rem", left: "0.85rem",
+                padding: "0.3rem 0.75rem", borderRadius: "100px",
+                background: "var(--primary)", color: "#fff",
+                fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+                boxShadow: "0 4px 18px rgba(230,34,140,0.5)",
               }}
             >
-              {t === "spotify" ? "Spotify" : "YT"}
-            </button>
-          ))}
+              Neu
+            </span>
+          )}
         </div>
+      )}
+      <div style={{ padding: "1.25rem 1.5rem 0", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.75rem" }}>
+        <div>
+          <p style={{ fontWeight: 600, color: "#fff", fontSize: "1rem", marginBottom: "0.2rem" }}>{song.title}</p>
+          {song.feat && (
+            <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.45)", letterSpacing: "0.04em" }}>feat. {song.feat}</p>
+          )}
+        </div>
+        {tabs.length > 1 && (
+          <div style={{ display: "flex", gap: "0.375rem" }}>
+            {tabs.map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                style={{
+                  padding: "0.3rem 0.7rem", borderRadius: "4px", border: "1px solid",
+                  borderColor: tab === t ? "var(--primary)" : "rgba(230,34,140,0.2)",
+                  background: tab === t ? "rgba(230,34,140,0.15)" : "transparent",
+                  color: tab === t ? "#fff" : "rgba(255,255,255,0.4)",
+                  fontSize: "0.65rem", letterSpacing: "0.08em", cursor: "pointer",
+                  textTransform: "uppercase", transition: "all 0.2s",
+                }}
+              >
+                {t === "spotify" ? "Spotify" : "YT"}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <div style={{ padding: "1rem 1.5rem 1.5rem" }}>
-        {tab === "spotify" ? (
+        {tab === "spotify" && song.spotifyId ? (
           <iframe
             title={`${song.title} auf Spotify`}
-            src={`https://open.spotify.com/embed/track/${song.spotifyTrackId}?utm_source=generator&theme=0`}
+            src={`https://open.spotify.com/embed/track/${song.spotifyId}?utm_source=generator&theme=0`}
             width="100%" height="152"
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
             loading="lazy"
             style={{ border: "none", borderRadius: "12px" }}
           />
-        ) : (
+        ) : tab === "youtube" && song.youtubeId ? (
           <div style={{ position: "relative", paddingTop: "56.25%" }}>
             <iframe
               title={`${song.title} auf YouTube`}
-              src={`https://www.youtube.com/embed/${song.youtubeVideoId}`}
+              src={`https://www.youtube.com/embed/${song.youtubeId}`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen loading="lazy"
               style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", borderRadius: "8px" }}
             />
           </div>
+        ) : (
+          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "0.85rem", lineHeight: 1.6 }}>
+            <span style={{ color: "var(--primary)" }}>♫</span> Jetzt auf allen Streaming-Plattformen – Links folgen in Kürze.
+          </p>
         )}
       </div>
     </motion.div>
   );
 }
 
-export default function Songs() {
+export default function Songs({ songs, newIds = [] }: { songs: SongView[]; newIds?: string[] }) {
   return (
     <section id="songs" aria-label="Songs" style={{ background: "var(--background)", padding: "6rem 1.5rem", position: "relative", overflow: "hidden" }}>
       <FloatingDecor labels={["🎶 Mitsingen", "🔥 Stimmung"]} />
@@ -189,22 +221,20 @@ export default function Songs() {
           <h2 style={{ fontFamily: "var(--font-anton)", fontSize: "clamp(2.5rem, 6vw, 4rem)", letterSpacing: "0.06em", color: "#fff", lineHeight: 1 }}>
             SONGS
           </h2>
-          {!allPlaceholder && (
+          {songs.length > 0 && (
             <p style={{ color: "rgba(255,255,255,0.45)", marginTop: "1rem", fontSize: "0.95rem" }}>
-              Auf Spotify und YouTube anhören
+              Reinhören, mitsingen, eskalieren
             </p>
           )}
         </div>
 
-        {allPlaceholder ? (
+        {songs.length === 0 ? (
           <ComingSoonTeaser />
         ) : (
-          <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))" }}>
-            {songs
-              .filter((s) => !s.spotifyTrackId.startsWith("PLACEHOLDER") || !s.youtubeVideoId.startsWith("PLACEHOLDER"))
-              .map((song, i) => (
-                <SongCard key={song.id} song={song} index={i} />
-              ))}
+          <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 360px))", justifyContent: "center" }}>
+            {songs.map((song, i) => (
+              <SongCard key={song.id} song={song} isNew={newIds.includes(song.id)} index={i} />
+            ))}
           </div>
         )}
       </div>

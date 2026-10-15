@@ -1,35 +1,30 @@
-export interface Song {
+/**
+ * Songs, die unabhängig von der Datenbank auf der Website erscheinen.
+ * Weitere Songs können im Admin unter /admin/songs gepflegt werden.
+ *
+ * `releaseAt` steuert die automatische Veröffentlichung: Vorher ist der Song
+ * auf der Website unsichtbar. Streaming-IDs können später nachgetragen werden –
+ * bis dahin zeigt die Karte nur Cover und Hinweis.
+ */
+export interface StaticSong {
   id: string;
   title: string;
-  subtitle?: string;
-  spotifyTrackId: string; // replace with real ID
-  youtubeVideoId: string; // replace with real ID
-  type: "spotify" | "youtube" | "both";
+  feat?: string;
+  coverUrl?: string;
+  /** Spotify Track-ID, z. B. aus https://open.spotify.com/track/<ID> */
+  spotifyTrackId?: string;
+  /** YouTube Video-ID, z. B. aus https://www.youtube.com/watch?v=<ID> */
+  youtubeVideoId?: string;
+  /** ISO-Zeitpunkt mit Zeitzone */
+  releaseAt: string;
 }
 
-export const songs: Song[] = [
+export const songs: StaticSong[] = [
   {
-    id: "1",
-    title: "Lass uns feiern",
-    subtitle: "Party Anthem 2024",
-    spotifyTrackId: "PLACEHOLDER_SPOTIFY_ID_1",
-    youtubeVideoId: "PLACEHOLDER_YOUTUBE_ID_1",
-    type: "both",
-  },
-  {
-    id: "2",
-    title: "Ruhrpott Feeling",
-    subtitle: "Playa Edition",
-    spotifyTrackId: "PLACEHOLDER_SPOTIFY_ID_2",
-    youtubeVideoId: "PLACEHOLDER_YOUTUBE_ID_2",
-    type: "both",
-  },
-  {
-    id: "3",
-    title: "Eskalation",
-    subtitle: "Club Mix",
-    spotifyTrackId: "PLACEHOLDER_SPOTIFY_ID_3",
-    youtubeVideoId: "PLACEHOLDER_YOUTUBE_ID_3",
-    type: "both",
+    id: "dichter",
+    title: "Dichter",
+    coverUrl: "/songs/dichter-cover.jpg",
+    // Release: Freitag, 16. Oktober 2026, 0:00 Uhr (MESZ)
+    releaseAt: "2026-10-16T00:00:00+02:00",
   },
 ];

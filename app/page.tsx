@@ -9,9 +9,16 @@ import Booking from "@/components/sections/Booking";
 import FanCommunity from "@/components/sections/FanCommunity";
 import Footer from "@/components/sections/Footer";
 import { getEvents } from "@/lib/events";
+import { getReleasedSongs, isNewRelease } from "@/lib/songs";
+
+// Re-render at most every 60s so timed song releases (e.g. at midnight) and
+// admin changes show up without a redeploy.
+export const revalidate = 60;
 
 export default async function Home() {
-  const events = await getEvents();
+  const now = new Date();
+  const [events, songs] = await Promise.all([getEvents(), getReleasedSongs(now)]);
+  const newSongIds = songs.filter((s) => isNewRelease(s, now)).map((s) => s.id);
 
   return (
     <>
@@ -20,7 +27,7 @@ export default async function Home() {
         <Hero />
         <About />
         <Events events={events} />
-        <Songs />
+        <Songs songs={songs} newIds={newSongIds} />
         <MerchSection />
         <BookingBanner />
         <Booking />
