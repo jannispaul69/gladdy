@@ -193,7 +193,7 @@ function SongCard({ song, isNew, index }: { song: SongView; isNew: boolean; inde
           <div style={{ position: "relative", paddingTop: "56.25%" }}>
             <iframe
               title={`${song.title} auf YouTube`}
-              src={`https://www.youtube.com/embed/${song.youtubeId}`}
+              src={`https://www.youtube-nocookie.com/embed/${song.youtubeId}`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen loading="lazy"
               style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", borderRadius: "8px" }}
@@ -209,7 +209,73 @@ function SongCard({ song, isNew, index }: { song: SongView; isNew: boolean; inde
   );
 }
 
+function FeaturedSong({ song, isNew }: { song: SongView; isNew: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 28 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6 }}
+      className="card-pink"
+      style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", padding: "1.5rem", marginBottom: "1.5rem" }}
+    >
+      <div style={{ flex: "2 1 480px", minWidth: 0 }}>
+        <div style={{ position: "relative", paddingTop: "56.25%", borderRadius: "10px", overflow: "hidden", background: "#000" }}>
+          <iframe
+            title={`${song.title} – offizielles Musikvideo`}
+            src={`https://www.youtube-nocookie.com/embed/${song.youtubeId}`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen loading="lazy"
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
+          />
+        </div>
+      </div>
+      <div style={{ flex: "1 1 260px", minWidth: 0, display: "flex", flexDirection: "column", gap: "1rem", justifyContent: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          {song.coverUrl && (
+            <div style={{ position: "relative", width: "72px", height: "72px", flexShrink: 0, borderRadius: "8px", overflow: "hidden" }}>
+              <Image src={song.coverUrl} alt={`Cover: ${song.title}`} fill sizes="72px" style={{ objectFit: "cover" }} />
+            </div>
+          )}
+          <div>
+            <p style={{ fontSize: "0.62rem", letterSpacing: "0.18em", color: "var(--primary)", textTransform: "uppercase", fontWeight: 600, marginBottom: "0.3rem" }}>
+              {isNew ? "Neu · " : ""}Offizielles Musikvideo
+            </p>
+            <p style={{ fontFamily: "var(--font-anton)", fontSize: "clamp(1.6rem, 4vw, 2.2rem)", color: "#fff", letterSpacing: "0.04em", lineHeight: 1 }}>
+              {song.title.toUpperCase()}
+            </p>
+            {song.feat && (
+              <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.45)", marginTop: "0.3rem" }}>feat. {song.feat}</p>
+            )}
+          </div>
+        </div>
+        {song.spotifyId ? (
+          <iframe
+            title={`${song.title} auf Spotify`}
+            src={`https://open.spotify.com/embed/track/${song.spotifyId}?utm_source=generator&theme=0`}
+            width="100%" height="152"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            style={{ border: "none", borderRadius: "12px" }}
+          />
+        ) : (
+          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "0.85rem", lineHeight: 1.6 }}>
+            <span style={{ color: "var(--primary)" }}>♫</span> Jetzt auf allen Streaming-Plattformen.
+          </p>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
 export default function Songs({ songs, newIds = [] }: { songs: SongView[]; newIds?: string[] }) {
+  // The newest song gets the big video block when it has a music video.
+  const featured = songs[0]?.youtubeId ? songs[0] : null;
+  const rest = featured ? songs.slice(1) : songs;
+
   return (
     <section id="songs" aria-label="Songs" style={{ background: "var(--background)", padding: "6rem 1.5rem", position: "relative", overflow: "hidden" }}>
       <FloatingDecor labels={["🎶 Mitsingen", "🔥 Stimmung"]} />
@@ -231,11 +297,16 @@ export default function Songs({ songs, newIds = [] }: { songs: SongView[]; newId
         {songs.length === 0 ? (
           <ComingSoonTeaser />
         ) : (
-          <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 360px))", justifyContent: "center" }}>
-            {songs.map((song, i) => (
-              <SongCard key={song.id} song={song} isNew={newIds.includes(song.id)} index={i} />
-            ))}
-          </div>
+          <>
+            {featured && <FeaturedSong song={featured} isNew={newIds.includes(featured.id)} />}
+            {rest.length > 0 && (
+              <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 360px))", justifyContent: "center" }}>
+                {rest.map((song, i) => (
+                  <SongCard key={song.id} song={song} isNew={newIds.includes(song.id)} index={i} />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>

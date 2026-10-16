@@ -15,6 +15,14 @@ const BUCKET = `${SUPABASE_URL}/storage/v1/object/public/gladdy-uploads`;
 
 const FILES = [
   {
+    id: "media-kit",
+    label: "Media Kit 2026",
+    desc: "GLADDY auf einen Blick: Show, Profil & Booking",
+    url: "/presskit/gladdy-media-kit-2026.pdf",
+    type: "PDF",
+    Icon: FileText,
+  },
+  {
     id: "pressefotos",
     label: "Pressefotos",
     desc: "Hochauflösende Fotos für Print und Online",

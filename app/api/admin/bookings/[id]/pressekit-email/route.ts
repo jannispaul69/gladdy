@@ -11,6 +11,7 @@ const PAGE_URL = process.env.SITE_URL
 const PASSWORD = process.env.PRESSKIT_PASSWORD ?? "booking";
 
 const FILES = [
+  { label: "Media Kit 2026",    url: "https://www.gladdy-offiziell.de/presskit/gladdy-media-kit-2026.pdf", type: "PDF" },
   // >50 MB, exceeds the Supabase file limit — served from /public instead
   { label: "Pressefotos",       url: "https://www.gladdy-offiziell.de/presskit/pressefotos.zip", type: "ZIP" },
   { label: "Technischer Rider", url: `${BUCKET}/pressekit/rider.pdf`,       type: "PDF" },

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Download } from "lucide-react";
 import { useBookingModal } from "@/context/booking-modal";
 
 export default function BookingBanner() {
@@ -58,6 +59,22 @@ export default function BookingBanner() {
             >
               Jetzt anfragen
             </button>
+            <a
+              href="/presskit/gladdy-media-kit-2026.pdf"
+              download
+              style={{
+                display: "inline-flex", alignItems: "center", gap: "0.5rem",
+                padding: "0.95rem 1.75rem", borderRadius: "8px",
+                border: "1px solid rgba(230,34,140,0.45)", color: "#fff",
+                fontSize: "0.9rem", letterSpacing: "0.06em", textDecoration: "none",
+                background: "rgba(230,34,140,0.08)", transition: "background 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(230,34,140,0.2)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(230,34,140,0.08)")}
+            >
+              <Download size={16} strokeWidth={2} />
+              Media Kit (PDF)
+            </a>
             <a
               href="mailto:booking@gladdy-offiziell.de"
               style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.85rem", textDecoration: "none", letterSpacing: "0.04em", transition: "color 0.2s" }}
